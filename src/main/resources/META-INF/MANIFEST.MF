@@ -1,0 +1,2 @@
+Manifest-Version: 1.0
+Main-Class: de.dhbw.ka.tinf22b5.Main

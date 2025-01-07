@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("application")
 }
 
 group = "de.dhbw.ka.tinf22b5"
@@ -18,6 +19,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(23)
     }
+}
+
+application {
+    mainClass = "de.dhbw.ka.tinf22b5.Main"
 }
 
 tasks.test {
