@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id("application")
+    id("com.gradleup.shadow") version "8.3.5"
 }
 
 group = "de.dhbw.ka.tinf22b5"
