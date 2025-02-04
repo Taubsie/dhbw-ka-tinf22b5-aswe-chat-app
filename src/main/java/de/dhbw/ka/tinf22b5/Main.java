@@ -1,5 +1,10 @@
 package de.dhbw.ka.tinf22b5;
 
+import de.dhbw.ka.tinf22b5.terminal.TerminalHandlerException;
+import de.dhbw.ka.tinf22b5.terminal.lin.LinuxTerminalHandler;
+import de.dhbw.ka.tinf22b5.terminal.TerminalHandler;
+import de.dhbw.ka.tinf22b5.terminal.win.WindowsTerminalHandler;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main {
@@ -12,7 +17,11 @@ public class Main {
             terminal = new LinuxTerminalHandler();
         }
 
-        terminal.init();
+        try {
+            terminal.init();
+        } catch (TerminalHandlerException e) {
+            e.printStackTrace();
+        }
 
         AtomicBoolean stop = new AtomicBoolean(false);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
