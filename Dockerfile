@@ -17,5 +17,7 @@ COPY --from=BUILD $APP_HOME/build/build/distributions/$ARTIFACT_NAME .
 
 RUN tar -C "$APP_HOME" -xvf "$ARTIFACT_NAME"
 
+ENV ASWE_CHAT_APP_OPTS="--enable-native-access=ALL-UNNAMED"
+
 EXPOSE 8080
 ENTRYPOINT ["aswe-chat-app-1.0.0/bin/aswe-chat-app"]
