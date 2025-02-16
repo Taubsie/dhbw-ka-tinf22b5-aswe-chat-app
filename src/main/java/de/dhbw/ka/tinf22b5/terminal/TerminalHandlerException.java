@@ -4,4 +4,8 @@ public class TerminalHandlerException extends Exception {
     public TerminalHandlerException(String message) {
         super(message);
     }
+
+    public TerminalHandlerException(Throwable e) {
+        super(e);
+    }
 }

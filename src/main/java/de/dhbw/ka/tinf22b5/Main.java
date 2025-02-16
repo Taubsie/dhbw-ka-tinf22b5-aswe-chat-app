@@ -1,14 +1,16 @@
 package de.dhbw.ka.tinf22b5;
 
+import de.dhbw.ka.tinf22b5.terminal.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.TerminalHandlerException;
 import de.dhbw.ka.tinf22b5.terminal.lin.LinuxTerminalHandler;
-import de.dhbw.ka.tinf22b5.terminal.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.win.WindowsTerminalHandler;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main {
     public static void main(String[] args) {
+
         TerminalHandler terminal;
         // nicht schön aber funktioniert
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
@@ -25,20 +27,31 @@ public class Main {
 
         AtomicBoolean stop = new AtomicBoolean(false);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            terminal.deinit();
+            try {
+                terminal.deinit();
+            } catch (TerminalHandlerException e) {
+                e.printStackTrace();
+            }
             stop.set(true);
         }));
 
-        int c = -1;
-        while (c != 'q' && !stop.get()) {
-            c = terminal.getChar();
-            System.out.println(c + " " + (char) c);
+        byte[] readChars;
+        while (!stop.get()) {
+            readChars = terminal.getChar();
+            System.out.print("Pressed chars as escaped sequence: " + Arrays.toString(readChars) + "\r\n");
 
-            if(c == 'd') {
-                System.out.println(terminal.getSize());
+            if (readChars.length >= 1) {
+                switch (readChars[0]) {
+                    case 'd' -> System.out.print(terminal.getSize() + "\r\n");
+                    case 'q' -> stop.set(true);
+                }
             }
         }
 
-        terminal.deinit();
+        try {
+            terminal.deinit();
+        } catch (TerminalHandlerException e) {
+            e.printStackTrace();
+        }
     }
 }
