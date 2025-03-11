@@ -16,6 +16,10 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
+# appeared suddenly as new files
+.idea/.name
+.idea/uiDesigner.xml
+
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
