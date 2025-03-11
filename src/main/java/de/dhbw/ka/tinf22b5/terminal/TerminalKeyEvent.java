@@ -1,13 +1,12 @@
 package de.dhbw.ka.tinf22b5.terminal;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class TerminalKeyEvent {
 
     private final byte[] utf8Chars;
-
     private final TerminalKeyType keyType;
-
     private final int terminalKey;
 
     public TerminalKeyEvent() {
@@ -15,7 +14,11 @@ public class TerminalKeyEvent {
     }
 
     public TerminalKeyEvent(byte[] keys) {
-        this(keys, TerminalKeyType.TKT_UNKNOWN, TerminalKey.TK_UNKNOWN);
+        this(keys, TerminalKeyType.TKT_UNKNOWN);
+    }
+
+    public TerminalKeyEvent(byte[] keys, TerminalKeyType keyType) {
+        this(keys, keyType, TerminalKey.TK_UNKNOWN);
     }
 
     public TerminalKeyEvent(byte[] utf8Chars, TerminalKeyType keyType, int terminalKey) {
@@ -34,5 +37,12 @@ public class TerminalKeyEvent {
 
     public int getTerminalKey() {
         return terminalKey;
+    }
+
+    public String convertAllToUTF8String() {
+            if(keyType == TerminalKeyType.TKT_ASCII || keyType == TerminalKeyType.TKT_UNICODE || keyType == TerminalKeyType.TKT_UNICODE_STRING)
+                return new String(utf8Chars, StandardCharsets.UTF_8);
+
+            return TerminalKey.getKeyText(terminalKey);
     }
 }

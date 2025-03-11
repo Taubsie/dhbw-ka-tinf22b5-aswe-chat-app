@@ -37,7 +37,7 @@ public class Main {
         TerminalKeyParser terminalKeyParser = new TerminalKeyParser();
         while (!stop.get()) {
             TerminalKeyEvent event = terminalKeyParser.parseTerminalKeyInput(terminal.getChar());
-            System.out.print("Pressed char: " + TerminalKey.getKeyText(event.getTerminalKey()) + " " + event.getKeyType() + "\r\n");
+            System.out.print("Pressed char: " + event.convertAllToUTF8String() + " " + event.getKeyType() + "\r\n");
 
             switch (event.getTerminalKey()) {
                 case TerminalKey.TK_d, TerminalKey.TK_D -> System.out.print(terminal.getSize() + "\r\n");

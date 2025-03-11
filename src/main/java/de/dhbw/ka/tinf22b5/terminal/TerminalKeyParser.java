@@ -1,15 +1,39 @@
 package de.dhbw.ka.tinf22b5.terminal;
 
+import java.nio.charset.StandardCharsets;
+
 public class TerminalKeyParser {
 
     public TerminalKeyEvent parseTerminalKeyInput(byte[] keys) {
+        /* ---------------------
+         * on wrong data return valid event to prevent crashes
+         * ---------------------
+         */
         if(keys == null || keys.length == 0)
             return new TerminalKeyEvent();
 
+        /* ---------------------
+         * single key probably valid ascii char
+         * ---------------------
+         */
         if(keys.length == 1)
             return parseSingleTerminalKeyInput(keys);
 
-        return new TerminalKeyEvent(keys);
+        /* ---------------------
+         * terminal escape chars start with 27
+         * ---------------------
+         */
+        if(keys[0] == 0x1b) {
+            return new TerminalKeyEvent();
+        } else {
+            /* ---------------------
+             * probably utf-8 sequence
+             * ---------------------
+             */
+            String tmpStr = new String(keys, StandardCharsets.UTF_8);
+            int utf8CharCount = tmpStr.codePointCount(0, tmpStr.length());
+            return new TerminalKeyEvent(keys, utf8CharCount <= 1 ? TerminalKeyType.TKT_UNICODE : TerminalKeyType.TKT_UNICODE_STRING);
+        }
     }
 
     private TerminalKeyEvent parseSingleTerminalKeyInput(byte[] keys) {
