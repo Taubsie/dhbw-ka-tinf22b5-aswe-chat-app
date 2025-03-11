@@ -14,6 +14,7 @@ public class TerminalKey {
      */
     public static final int TK_TAB                = 0x09;
     public static final int TK_ENTER              = 0x0d;
+    public static final int TK_ESCAPE             = 0x1b;
 
     /* ---------------------
      * ctrl + letter
@@ -181,9 +182,58 @@ public class TerminalKey {
     public static final int TK_TILDE              = 0x7e;
 
     /* ---------------------
-     * <-- key for forward deletion
+     * <-- ascii key for forward deletion
      * ---------------------
      */
     public static final int TK_BACKSPACE          = 0x7f;
+
+    /* ---------------------
+     * special control keys
+     * ---------------------
+     */
+    public static final int TK_INSERT             = 0x100100;
+    public static final int TK_DELETE             = 0x100200;
+    public static final int TK_POS1               = 0x100300;
+    public static final int TK_END                = 0x100400;
+    public static final int TK_PAGE_UP            = 0x100500;
+    public static final int TK_PAGE_DOWN          = 0x100600;
+
+    /* ---------------------
+     * arrow keys keys
+     * ---------------------
+     */
+    public static final int TK_UP                 = 0x110100;
+    public static final int TK_DOWN               = 0x110200;
+    public static final int TK_RIGHT              = 0x110300;
+    public static final int TK_LEFT               = 0x110400;
+
+    /* ---------------------
+     * f keys
+     * ---------------------
+     */
+    public static final int TK_F1                 = 0xf00100;
+    public static final int TK_F2                 = 0xf00200;
+    public static final int TK_F3                 = 0xf00300;
+    public static final int TK_F4                 = 0xf00400;
+    public static final int TK_F5                 = 0xf00500;
+    public static final int TK_F6                 = 0xf00600;
+    public static final int TK_F7                 = 0xf00700;
+    public static final int TK_F8                 = 0xf00800;
+    public static final int TK_F9                 = 0xf00900;
+    public static final int TK_F10                = 0xf00a00;
+    public static final int TK_F11                = 0xf00b00;
+    public static final int TK_F12                = 0xf00c00;
+    public static final int TK_F13                = 0xf00d00;
+    public static final int TK_F14                = 0xf00e00;
+    public static final int TK_F15                = 0xf00f00;
+    public static final int TK_F16                = 0xf01000;
+    public static final int TK_F17                = 0xf01100;
+    public static final int TK_F18                = 0xf01200;
+    public static final int TK_F19                = 0xf01300;
+    public static final int TK_F20                = 0xf01400;
+    public static final int TK_F21                = 0xf01500;
+    public static final int TK_F22                = 0xf01600;
+    public static final int TK_F23                = 0xf01700;
+    public static final int TK_F24                = 0xf01800;
 
 }
