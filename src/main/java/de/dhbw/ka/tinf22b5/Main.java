@@ -1,15 +1,14 @@
 package de.dhbw.ka.tinf22b5;
 
-import de.dhbw.ka.tinf22b5.terminal.TerminalHandler;
-import de.dhbw.ka.tinf22b5.terminal.TerminalHandlerException;
+import de.dhbw.ka.tinf22b5.terminal.*;
 import de.dhbw.ka.tinf22b5.terminal.lin.LinuxTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.win.WindowsTerminalHandler;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         TerminalHandler terminal;
         // nicht schön aber funktioniert
@@ -35,16 +34,15 @@ public class Main {
             stop.set(true);
         }));
 
-        byte[] readChars;
+        TerminalKeyParser terminalKeyParser = new TerminalKeyParser();
         while (!stop.get()) {
-            readChars = terminal.getChar();
-            System.out.print("Pressed chars as escaped sequence: " + Arrays.toString(readChars) + "\r\n");
+            TerminalKeyEvent event = terminalKeyParser.parseTerminalKeyInput(terminal.getChar());
+            System.out.print("Pressed char: " + TerminalKey.getKeyText(event.getTerminalKey()) + " " + event.getKeyType() + "\r\n");
 
-            if (readChars.length >= 1) {
-                switch (readChars[0]) {
-                    case 'd' -> System.out.print(terminal.getSize() + "\r\n");
-                    case 'q' -> stop.set(true);
-                }
+            switch (event.getTerminalKey()) {
+                case TerminalKey.TK_d, TerminalKey.TK_D -> System.out.print(terminal.getSize() + "\r\n");
+                case TerminalKey.TK_q, TerminalKey.TK_Q -> stop.set(true);
+                case TerminalKey.TK_g, TerminalKey.TK_G -> System.out.write(new byte[] {0x1b, '[', '6', 'n' });
             }
         }
 

@@ -6,7 +6,7 @@ public class TerminalKey {
      * invalid / unknown key
      * ---------------------
      */
-    public static final int TK_UNDEFINED          = 0xffffffff;
+    public static final int TK_UNKNOWN          = 0xffffffff;
 
     /* ---------------------
      * ascii control chars
@@ -236,4 +236,270 @@ public class TerminalKey {
     public static final int TK_F23                = 0xf01700;
     public static final int TK_F24                = 0xf01800;
 
+    public static String getKeyText(int keyCode) {
+        /* ---------------------
+         * numbers and letters
+         * ---------------------
+         */
+        if((keyCode >= TK_0 && keyCode <= TK_9) ||
+                (keyCode >= TK_A && keyCode <= TK_Z) ||
+                (keyCode >= TK_a && keyCode <= TK_z))
+            return String.valueOf((char)keyCode);
+
+        switch (keyCode) {
+            /* ---------------------
+             * ascii control chars
+             * ---------------------
+             */
+            case TerminalKey.TK_TAB:
+                return "Tab";
+            case TerminalKey.TK_ENTER:
+                return "Enter";
+            case TerminalKey.TK_ESCAPE:
+                return "Escape";
+
+            /* ---------------------
+             * ctrl + letter, some have same code as the above
+             * ---------------------
+             */
+            case TerminalKey.TK_CTRL_SPACE:
+                return "Ctrl + space";
+            case TerminalKey.TK_CTRL_A:
+                return "Ctrl + a";
+            case TerminalKey.TK_CTRL_B:
+                return "Ctrl + b";
+            case TerminalKey.TK_CTRL_C:
+                return "Ctrl + c";
+            case TerminalKey.TK_CTRL_D:
+                return "Ctrl + d";
+            case TerminalKey.TK_CTRL_E:
+                return "Ctrl + e";
+            case TerminalKey.TK_CTRL_F:
+                return "Ctrl + f";
+            case TerminalKey.TK_CTRL_G:
+                return "Ctrl + g";
+            case TerminalKey.TK_CTRL_H:
+                return "Ctrl + h";
+            //case TerminalKey.TK_CTRL_I:
+            //    return "Ctrl + i";
+            case TerminalKey.TK_CTRL_J:
+                return "Ctrl + j";
+            case TerminalKey.TK_CTRL_K:
+                return "Ctrl + k";
+            case TerminalKey.TK_CTRL_L:
+                return "Ctrl + l";
+            //case TerminalKey.TK_CTRL_M:
+            //    return "Ctrl + m";
+            case TerminalKey.TK_CTRL_N:
+                return "Ctrl + n";
+            case TerminalKey.TK_CTRL_O:
+                return "Ctrl + o";
+            case TerminalKey.TK_CTRL_P:
+                return "Ctrl + p";
+            case TerminalKey.TK_CTRL_Q:
+                return "Ctrl + q";
+            case TerminalKey.TK_CTRL_R:
+                return "Ctrl + r";
+            case TerminalKey.TK_CTRL_S:
+                return "Ctrl + s";
+            case TerminalKey.TK_CTRL_T:
+                return "Ctrl + t";
+            case TerminalKey.TK_CTRL_U:
+                return "Ctrl + u";
+            case TerminalKey.TK_CTRL_V:
+                return "Ctrl + v";
+            case TerminalKey.TK_CTRL_W:
+                return "Ctrl + w";
+            case TerminalKey.TK_CTRL_X:
+                return "Ctrl + x";
+            case TerminalKey.TK_CTRL_Y:
+                return "Ctrl + y";
+            case TerminalKey.TK_CTRL_Z:
+                return "Ctrl + z";
+            //case TerminalKey.TK_CTRL_LEFT_BRACKET:
+            //    return "Ctrl + left bracket";
+            case TerminalKey.TK_CTRL_BACKSLASH:
+                return "Ctrl + backslash";
+            case TerminalKey.TK_CTRL_RIGHT_BRACKET:
+                return "Ctrl + right bracket";
+
+            /* ---------------------
+             * ascii special chars
+             * ---------------------
+             */
+            case TerminalKey.TK_SPACE:
+                return "Space";
+            case TerminalKey.TK_EXCLAMATION_MARK:
+                return "Exclamation mark";
+            case TerminalKey.TK_DOUBLE_QUOTE:
+                return "Double quote";
+            case TerminalKey.TK_HASH_TAG:
+                return "Hash tag";
+            case TerminalKey.TK_DOLLAR:
+                return "Dollar";
+            case TerminalKey.TK_PERCENT:
+                return "Percent";
+            case TerminalKey.TK_AMPERSAND:
+                return "Ampersand";
+            case TerminalKey.TK_APOSTROPHE:
+                return "Apostrophe";
+            case TerminalKey.TK_LEFT_PARENTHESES:
+                return "Left parentheses";
+            case TerminalKey.TK_RIGHT_PARENTHESES:
+                return "Right parentheses";
+            case TerminalKey.TK_ASTERISK:
+                return "Asterisk";
+            case TerminalKey.TK_PLUS:
+                return "Plus";
+            case TerminalKey.TK_COMMA:
+                return "Comma";
+            case TerminalKey.TK_MINUS:
+                return "Minus";
+            case TerminalKey.TK_PERIOD:
+                return "Period";
+            case TerminalKey.TK_SLASH:
+                return "Slash";
+
+            /* ---------------------
+             * ascii operators special chars
+             * ---------------------
+             */
+            case TerminalKey.TK_COLON:
+                return "Colon";
+            case TerminalKey.TK_SEMICOLON:
+                return "Semicolon";
+            case TerminalKey.TK_LESS:
+                return "Less";
+            case TerminalKey.TK_EQUALS:
+                return "Equals";
+            case TerminalKey.TK_GREATER:
+                return "Greater";
+            case TerminalKey.TK_QUESTION_MARK:
+                return "Question mark";
+            case TerminalKey.TK_AT:
+                return "At";
+
+            /* ---------------------
+             * ascii special chars
+             * ---------------------
+             */
+            case TerminalKey.TK_LEFT_BRACKET:
+                return "Left bracket";
+            case TerminalKey.TK_BACKSLASH:
+                return "Backslash";
+            case TerminalKey.TK_RIGHT_BRACKET:
+                return "Right bracket";
+            case TerminalKey.TK_CARET:
+                return "Caret";
+            case TerminalKey.TK_UNDER_SCORE:
+                return "Under score";
+            case TerminalKey.TK_BACKTICK:
+                return "Backtick";
+
+            /* ---------------------
+             * ascii special chars
+             * ---------------------
+             */
+            case TerminalKey.TK_LEFT_CURLY_BRACE:
+                return "Left curly brace";
+            case TerminalKey.TK_PIPE:
+                return "Pipe";
+            case TerminalKey.TK_RIGHT_CURLY_BRACE:
+                return "Right curly brace";
+            case TerminalKey.TK_TILDE:
+                return "Tilde";
+
+            /* ---------------------
+             * <-- ascii key for forward deletion
+             * ---------------------
+             */
+            case TerminalKey.TK_BACKSPACE:
+                return "Backspace";
+
+            /* ---------------------
+             * special control keys
+             * ---------------------
+             */
+            case TerminalKey.TK_INSERT:
+                return "Insert";
+            case TerminalKey.TK_DELETE:
+                return "Delete";
+            case TerminalKey.TK_POS1:
+                return "Pos1";
+            case TerminalKey.TK_END:
+                return "End";
+            case TerminalKey.TK_PAGE_UP:
+                return "Page up";
+            case TerminalKey.TK_PAGE_DOWN:
+                return "Page down";
+
+            /* ---------------------
+             * arrow keys keys
+             * ---------------------
+             */
+            case TerminalKey.TK_UP:
+                return "Up";
+            case TerminalKey.TK_DOWN:
+                return "Down";
+            case TerminalKey.TK_RIGHT:
+                return "Right";
+            case TerminalKey.TK_LEFT:
+                return "Left";
+
+            /* ---------------------
+             * f keys
+             * ---------------------
+             */
+            case TerminalKey.TK_F1:
+                return "F1";
+            case TerminalKey.TK_F2:
+                return "F2";
+            case TerminalKey.TK_F3:
+                return "F3";
+            case TerminalKey.TK_F4:
+                return "F4";
+            case TerminalKey.TK_F5:
+                return "F5";
+            case TerminalKey.TK_F6:
+                return "F6";
+            case TerminalKey.TK_F7:
+                return "F7";
+            case TerminalKey.TK_F8:
+                return "F8";
+            case TerminalKey.TK_F9:
+                return "F9";
+            case TerminalKey.TK_F10:
+                return "F10";
+            case TerminalKey.TK_F11:
+                return "F11";
+            case TerminalKey.TK_F12:
+                return "F12";
+            case TerminalKey.TK_F13:
+                return "F13";
+            case TerminalKey.TK_F14:
+                return "F14";
+            case TerminalKey.TK_F15:
+                return "F15";
+            case TerminalKey.TK_F16:
+                return "F16";
+            case TerminalKey.TK_F17:
+                return "F17";
+            case TerminalKey.TK_F18:
+                return "F18";
+            case TerminalKey.TK_F19:
+                return "F19";
+            case TerminalKey.TK_F20:
+                return "F20";
+            case TerminalKey.TK_F21:
+                return "F21";
+            case TerminalKey.TK_F22:
+                return "F22";
+            case TerminalKey.TK_F23:
+                return "F23";
+            case TerminalKey.TK_F24:
+                return "F24";
+        }
+
+        return "Unknown keyCode: 0x%x".formatted(keyCode);
+    }
 }
