@@ -225,6 +225,10 @@ public class TerminalKeyParser {
              * ---------------------
              */
             default:
+                // in case you're on a Windows and UTF-8 characters aren't correctly used in the console, you can either try the following setting:
+                // https://stackoverflow.com/questions/57131654/using-utf-8-encoding-chcp-65001-in-command-prompt-windows-powershell-window
+                // or you have to use this return statement instead:
+                // return new TerminalKeyEvent(keys, TerminalKeyType.TKT_ASCII, keys[0]);
                 return new TerminalKeyEvent(keys, TerminalKeyType.TKT_UNKNOWN, TerminalKey.TK_UNKNOWN);
         }
     }
