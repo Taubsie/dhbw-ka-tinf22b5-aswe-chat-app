@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="execute-shadow-jar-fixed-jdk" type="ShConfigurationType">
     <option name="SCRIPT_TEXT" value="%userprofile%\.jdks\openjdk-23.0.1\bin\java -jar build/libs/aswe-chat-app-1.0.0-all.jar" />
-    <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-    <option name="SCRIPT_PATH" value="" />
+    <option name="INDEPENDENT_SCRIPT_PATH" value="false" />
+    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/execution/execute-shadow-jar-develop-fixed.bat" />
     <option name="SCRIPT_OPTIONS" value="" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
     <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -10,7 +10,7 @@
     <option name="INTERPRETER_PATH" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="EXECUTE_IN_TERMINAL" value="true" />
-    <option name="EXECUTE_SCRIPT_FILE" value="false" />
+    <option name="EXECUTE_SCRIPT_FILE" value="true" />
     <envs />
     <method v="2">
       <option name="RunConfigurationTask" enabled="false" run_configuration_name="build-shadow-jar" run_configuration_type="GradleRunConfiguration" />

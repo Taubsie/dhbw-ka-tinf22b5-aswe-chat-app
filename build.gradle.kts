@@ -1,6 +1,10 @@
+import org.gradle.internal.jvm.Jvm
+import java.util.*
+
 plugins {
     id("java")
     id("application")
+    kotlin("jvm")
     id("com.gradleup.shadow") version "8.3.5"
 }
 
@@ -12,8 +16,10 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    implementation("org.jetbrains:annotations:26.0.2")
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(kotlin("test"))
 }
 
 java {
@@ -28,4 +34,35 @@ application {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+task("createProperties") {
+    dependsOn("processResources")
+    resources.text
+
+    doLast {
+        val projectVersion = project.version.toString()
+        val jdkName = Jvm.current().javaHome.name ?: "openjdk-23.0.1"
+
+        val executionFile = projectDir.resolve("src/main/resources/exec/execute-shadow-jar.sh")
+        executionFile.writeText("java -jar aswe-chat-app-$projectVersion-all.jar")
+
+        val developmentFile = projectDir.resolve("execution/execute-shadow-jar-develop.bat")
+        developmentFile.writeText("java -jar build/libs/aswe-chat-app-$projectVersion-all.jar")
+
+        val developmentFixedFile = projectDir.resolve("execution/execute-shadow-jar-develop-fixed.bat")
+        developmentFixedFile.writeText("%userprofile%/.jdks/$jdkName/bin/java -jar build/libs/aswe-chat-app-$projectVersion-all.jar")
+
+        val p = Properties()
+        p["version"] = projectVersion
+
+        val versionFile = File("${layout.buildDirectory.asFile.get().absolutePath}/resources/main/config/version.properties")
+        versionFile.parentFile.mkdirs()
+
+        p.store(versionFile.writer(), null)
+    }
+}
+
+tasks.classes {
+    dependsOn("createProperties")
 }
