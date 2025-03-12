@@ -44,7 +44,7 @@ task("createProperties") {
         val projectVersion = project.version.toString()
         val jdkName = Jvm.current().javaHome.name ?: "openjdk-23.0.1"
 
-        val executionFile = projectDir.resolve("execution/execute-shadow-jar-developq.sh")
+        val executionFile = projectDir.resolve("execution/execute-shadow-jar-develop.sh")
         executionFile.writeText("java --enable-native-access=ALL-UNNAMED -jar aswe-chat-app-$projectVersion-all.jar")
 
         val developmentFile = projectDir.resolve("execution/execute-shadow-jar-develop.bat")
