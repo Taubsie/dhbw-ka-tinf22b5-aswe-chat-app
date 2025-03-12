@@ -2,7 +2,7 @@
   <configuration default="false" name="execute-shadow-jar" type="ShConfigurationType">
     <option name="SCRIPT_TEXT" value="java -jar --enable-native-access=ALL-UNNAMED build/libs/aswe-chat-app-1.0.0-all.jar" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/execution/execute-shadow-jar-develop-fixed.bat" />
+    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/execution/execute-shadow-jar-develop.bat" />
     <option name="SCRIPT_OPTIONS" value="" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
     <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
