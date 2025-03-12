@@ -12,4 +12,13 @@ public interface TerminalHandler {
     byte[] getChar();
 
     Dimension getSize();
+
+    default void attachShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                this.deinit();
+            } catch (TerminalHandlerException _) {
+            }
+        }));
+    }
 }
