@@ -8,6 +8,7 @@ public class TerminalKeyEvent {
     private final byte[] utf8Chars;
     private final TerminalKeyType keyType;
     private final int terminalKey;
+    private final int modifiers;
 
     public TerminalKeyEvent() {
         this(new byte[0]);
@@ -22,9 +23,14 @@ public class TerminalKeyEvent {
     }
 
     public TerminalKeyEvent(byte[] utf8Chars, TerminalKeyType keyType, int terminalKey) {
+        this(utf8Chars, keyType, terminalKey, 0);
+    }
+
+    public TerminalKeyEvent(byte[] utf8Chars, TerminalKeyType keyType, int terminalKey, int modifiers) {
         this.utf8Chars = utf8Chars;
         this.keyType = keyType;
         this.terminalKey = terminalKey;
+        this.modifiers = modifiers;
     }
 
     public byte[] getUtf8Chars() {
@@ -39,10 +45,36 @@ public class TerminalKeyEvent {
         return terminalKey;
     }
 
-    public String convertAllToUTF8String() {
-            if(keyType == TerminalKeyType.TKT_ASCII || keyType == TerminalKeyType.TKT_UNICODE || keyType == TerminalKeyType.TKT_UNICODE_STRING)
-                return new String(utf8Chars, StandardCharsets.UTF_8);
+    public boolean isCtrlPressed() {
+        return (modifiers & TerminalKey.TK_MODIFIER_CTRL) != 0;
+    }
 
-            return TerminalKey.getKeyText(terminalKey);
+    public boolean isShiftPressed() {
+        return (modifiers & TerminalKey.TK_MODIFIER_SHIFT) != 0;
+    }
+
+    public boolean isAltPressed() {
+        return (modifiers & TerminalKey.TK_MODIFIER_ALT) != 0;
+    }
+
+    public String convertAllToUTF8String() {
+        String prefix = "";
+
+        if (isCtrlPressed()) {
+            prefix += "Ctrl + ";
+        }
+
+        if (isShiftPressed()) {
+            prefix += "Shift + ";
+        }
+
+        if (isAltPressed()) {
+            prefix += "Alt + ";
+        }
+
+        if (keyType == TerminalKeyType.TKT_ASCII || keyType == TerminalKeyType.TKT_UNICODE || keyType == TerminalKeyType.TKT_UNICODE_STRING)
+            return prefix + new String(utf8Chars, StandardCharsets.UTF_8);
+
+        return prefix + TerminalKey.getKeyText(terminalKey);
     }
 }
