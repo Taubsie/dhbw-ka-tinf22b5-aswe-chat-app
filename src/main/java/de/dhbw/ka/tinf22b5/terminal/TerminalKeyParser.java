@@ -118,10 +118,10 @@ public class TerminalKeyParser {
             case TerminalKey.TK_CTRL_6:
             case TerminalKey.TK_CTRL_7:
 
-                /* ---------------------
-                 * <-- ascii key for forward deletion
-                 * ---------------------
-                 */
+            /* ---------------------
+             * <-- ascii key for forward deletion
+             * ---------------------
+             */
             case TerminalKey.TK_BACKSPACE:
                 return new TerminalKeyEvent(new byte[]{key}, TerminalKeyType.TKT_SPECIAL_KEY, key);
 
@@ -146,10 +146,10 @@ public class TerminalKeyParser {
             case TerminalKey.TK_PERIOD:
             case TerminalKey.TK_SLASH:
 
-                /* ---------------------
-                 * numbers
-                 * ---------------------
-                 */
+            /* ---------------------
+             * numbers
+             * ---------------------
+             */
             case TerminalKey.TK_0:
             case TerminalKey.TK_1:
             case TerminalKey.TK_2:
@@ -161,10 +161,10 @@ public class TerminalKeyParser {
             case TerminalKey.TK_8:
             case TerminalKey.TK_9:
 
-                /* ---------------------
-                 * ascii operators special chars
-                 * ---------------------
-                 */
+            /* ---------------------
+             * ascii operators special chars
+             * ---------------------
+             */
             case TerminalKey.TK_COLON:
             case TerminalKey.TK_SEMICOLON:
             case TerminalKey.TK_LESS:
@@ -173,10 +173,10 @@ public class TerminalKeyParser {
             case TerminalKey.TK_QUESTION_MARK:
             case TerminalKey.TK_AT:
 
-                /* ---------------------
-                 * upper case letters
-                 * ---------------------
-                 */
+            /* ---------------------
+             * upper case letters
+             * ---------------------
+             */
             case TerminalKey.TK_A:
             case TerminalKey.TK_B:
             case TerminalKey.TK_C:
@@ -204,10 +204,10 @@ public class TerminalKeyParser {
             case TerminalKey.TK_Y:
             case TerminalKey.TK_Z:
 
-                /* ---------------------
-                 * ascii special chars
-                 * ---------------------
-                 */
+            /* ---------------------
+             * ascii special chars
+             * ---------------------
+             */
             case TerminalKey.TK_LEFT_BRACKET:
             case TerminalKey.TK_BACKSLASH:
             case TerminalKey.TK_RIGHT_BRACKET:
@@ -215,10 +215,10 @@ public class TerminalKeyParser {
             case TerminalKey.TK_UNDER_SCORE:
             case TerminalKey.TK_BACKTICK:
 
-                /* ---------------------
-                 * lower case letters
-                 * ---------------------
-                 */
+            /* ---------------------
+             * lower case letters
+             * ---------------------
+             */
             case TerminalKey.TK_a:
             case TerminalKey.TK_b:
             case TerminalKey.TK_c:
@@ -246,10 +246,10 @@ public class TerminalKeyParser {
             case TerminalKey.TK_y:
             case TerminalKey.TK_z:
 
-                /* ---------------------
-                 * ascii special chars
-                 * ---------------------
-                 */
+            /* ---------------------
+             * ascii special chars
+             * ---------------------
+             */
             case TerminalKey.TK_LEFT_CURLY_BRACE:
             case TerminalKey.TK_PIPE:
             case TerminalKey.TK_RIGHT_CURLY_BRACE:
