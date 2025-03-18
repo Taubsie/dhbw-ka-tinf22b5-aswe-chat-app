@@ -2,6 +2,7 @@ package de.dhbw.ka.tinf22b5.terminal;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class TerminalKeyEvent {
 
@@ -76,5 +77,18 @@ public class TerminalKeyEvent {
             return prefix + new String(utf8Chars, StandardCharsets.UTF_8);
 
         return prefix + TerminalKey.getKeyText(terminalKey);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TerminalKeyEvent that = (TerminalKeyEvent) o;
+        return terminalKey == that.terminalKey && modifiers == that.modifiers && Objects.deepEquals(utf8Chars, that.utf8Chars) && keyType == that.keyType;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.hashCode(utf8Chars), keyType, terminalKey, modifiers);
     }
 }
