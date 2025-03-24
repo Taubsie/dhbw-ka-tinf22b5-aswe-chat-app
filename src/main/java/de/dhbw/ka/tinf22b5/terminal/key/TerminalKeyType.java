@@ -1,4 +1,4 @@
-package de.dhbw.ka.tinf22b5.terminal;
+package de.dhbw.ka.tinf22b5.terminal.key;
 
 public enum TerminalKeyType {
     TKT_UNKNOWN,
