@@ -7,6 +7,7 @@ import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalRenderingBuffer;
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.Dimension;
 import java.io.IOException;
 
 public abstract class BaseTerminalHandler implements TerminalHandler {
@@ -64,7 +65,7 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
             handleInput(event);
         }
 
-        System.out.write(renderingBuffer.clear().scrollScreenUp().getBuffer());
+        System.out.write(renderingBuffer.clear().scrollScreenUp().setCursurVisible(true).getBuffer());
     }
 
     public void handleInput(TerminalKeyEvent event) throws IOException {
@@ -74,9 +75,22 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
     public void updateTerminal() throws IOException {
         renderingBuffer.clear();
         renderingBuffer.clearScreen();
+        addEmptyPage(renderingBuffer);
+        renderingBuffer.clearScreen();
         currentDialog.render(renderingBuffer);
         renderingBuffer.moveCursor(cursorX, cursorY);
         System.out.write(renderingBuffer.getBuffer());
+    }
+
+    private void addEmptyPage(TerminalRenderingBuffer renderingBuffer) {
+        Dimension terminalSize = this.getSize();
+        for (int row = 0; row < terminalSize.height; row++) {
+            for (int col = 0; col < terminalSize.width; col++) {
+                renderingBuffer.addString(" ");
+            }
+            if (row < terminalSize.height - 1)
+                renderingBuffer.nextLine();
+        }
     }
 
     public void quit() {
