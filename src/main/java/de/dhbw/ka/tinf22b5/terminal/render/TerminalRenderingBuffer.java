@@ -6,10 +6,14 @@ public interface TerminalRenderingBuffer {
     TerminalRenderingBuffer scrollScreenUp();
     TerminalRenderingBuffer moveCursor(int x, int y);
 
+    TerminalRenderingBuffer setCursurVisible(boolean visible);
+
     TerminalRenderingBuffer addBytes(byte... bytes);
     TerminalRenderingBuffer addBytes(int... bytes);
     TerminalRenderingBuffer addString(String string);
     TerminalRenderingBuffer nextLine();
+
+    TerminalRenderingBuffer clear();
 
     byte[] getBuffer();
 }

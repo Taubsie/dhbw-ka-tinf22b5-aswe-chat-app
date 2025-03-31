@@ -11,6 +11,7 @@ public class WelcomeDialog extends Dialog {
 
     @Override
     public void render(TerminalRenderingBuffer terminalRenderingBuffer) {
+        terminalRenderingBuffer.setCursurVisible(false);
         terminalRenderingBuffer.addString("Welcome to the Chat App!");
         terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.nextLine();

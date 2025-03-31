@@ -20,6 +20,7 @@ public class ConfigChangeDialog extends Dialog {
 
     @Override
     public void render(TerminalRenderingBuffer terminalRenderingBuffer) {
+        terminalRenderingBuffer.setCursurVisible(true);
         terminalRenderingBuffer.addString(newValue);
         terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.nextLine();

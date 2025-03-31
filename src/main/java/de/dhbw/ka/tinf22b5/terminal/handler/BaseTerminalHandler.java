@@ -4,6 +4,7 @@ import de.dhbw.ka.tinf22b5.dialog.Dialog;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyParser;
 import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalRenderingBuffer;
+import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -16,8 +17,11 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
 
     private boolean running = true;
 
+    private final TerminalRenderingBuffer renderingBuffer;
+
     public BaseTerminalHandler(Dialog currentDialog) {
         this.currentDialog = currentDialog;
+        renderingBuffer = new BaseTerminalRenderingBuffer();
     }
 
     @Override
@@ -60,8 +64,7 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
             handleInput(event);
         }
 
-        BaseTerminalRenderingBuffer renderingBuffer = new BaseTerminalRenderingBuffer();
-        System.out.write(renderingBuffer.scrollScreenUp().getBuffer());
+        System.out.write(renderingBuffer.clear().scrollScreenUp().getBuffer());
     }
 
     public void handleInput(TerminalKeyEvent event) throws IOException {
@@ -69,8 +72,7 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
     }
 
     public void updateTerminal() throws IOException {
-        BaseTerminalRenderingBuffer renderingBuffer = new BaseTerminalRenderingBuffer();
-
+        renderingBuffer.clear();
         renderingBuffer.clearScreen();
         currentDialog.render(renderingBuffer);
         renderingBuffer.moveCursor(cursorX, cursorY);

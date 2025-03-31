@@ -38,6 +38,12 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
     }
 
     @Override
+    public TerminalRenderingBuffer setCursurVisible(boolean visible) {
+        addBytes(0x1b, '[', '?', '2', '5', visible ? 'h' : 'l');
+        return this;
+    }
+
+    @Override
     public TerminalRenderingBuffer addBytes(byte... bytes) {
         for(byte b : bytes) {
             screenBuffer.add(b);
@@ -64,6 +70,12 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
     @Override
     public TerminalRenderingBuffer nextLine() {
         addString("\r\n");
+        return this;
+    }
+
+    @Override
+    public TerminalRenderingBuffer clear() {
+        screenBuffer.clear();
         return this;
     }
 
