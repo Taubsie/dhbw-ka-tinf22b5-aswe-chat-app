@@ -5,6 +5,7 @@ import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyType;
+import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 
 import java.io.IOException;
 
@@ -18,11 +19,14 @@ public class ConfigChangeDialog extends Dialog {
     }
 
     @Override
-    public void print() {
-        System.out.println(newValue);
-        System.out.println();
-        System.out.println("Changing: " + configOption);
-        System.out.println("Enter - Save value | Esc / STRG+Q - Discard changes");
+    public void render(TerminalRenderingBuffer terminalRenderingBuffer) {
+        terminalRenderingBuffer.addString(newValue);
+        terminalRenderingBuffer.nextLine();
+        terminalRenderingBuffer.nextLine();
+        terminalRenderingBuffer.addString("Changing: " + configOption);
+        terminalRenderingBuffer.nextLine();
+        terminalRenderingBuffer.addString("Enter - Save value | Esc / STRG+Q - Discard changes");
+        terminalRenderingBuffer.nextLine();
     }
 
     @Override

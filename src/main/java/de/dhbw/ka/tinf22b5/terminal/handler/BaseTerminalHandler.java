@@ -3,6 +3,7 @@ package de.dhbw.ka.tinf22b5.terminal.handler;
 import de.dhbw.ka.tinf22b5.dialog.Dialog;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyParser;
+import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalRenderingBuffer;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -15,10 +16,8 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
 
     private boolean running = true;
 
-    public BaseTerminalHandler(Dialog currentDialog) throws IOException {
+    public BaseTerminalHandler(Dialog currentDialog) {
         this.currentDialog = currentDialog;
-
-        updateTerminal();
     }
 
     @Override
@@ -55,27 +54,27 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
         TerminalKeyParser terminalKeyParser = new TerminalKeyParser();
 
         while (running) {
-            TerminalKeyEvent event = terminalKeyParser.parseTerminalKeyInput(this, this.getChar());
+            updateTerminal();
 
+            TerminalKeyEvent event = terminalKeyParser.parseTerminalKeyInput(this, this.getChar());
             handleInput(event);
         }
+
+        BaseTerminalRenderingBuffer renderingBuffer = new BaseTerminalRenderingBuffer();
+        System.out.write(renderingBuffer.scrollScreenUp().getBuffer());
     }
 
     public void handleInput(TerminalKeyEvent event) throws IOException {
-        clearTerminal();
-
         currentDialog.handleInput(event, this);
-
-        updateTerminal();
     }
 
     public void updateTerminal() throws IOException {
-        clearTerminal();
+        BaseTerminalRenderingBuffer renderingBuffer = new BaseTerminalRenderingBuffer();
 
-        //TODO rework to handle printing in the terminal handler class
-        currentDialog.print();
-
-        updateCursor(cursorX, cursorY);
+        renderingBuffer.clearScreen();
+        currentDialog.render(renderingBuffer);
+        renderingBuffer.moveCursor(cursorX, cursorY);
+        System.out.write(renderingBuffer.getBuffer());
     }
 
     public void quit() {

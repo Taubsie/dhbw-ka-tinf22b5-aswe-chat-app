@@ -4,15 +4,20 @@ import de.dhbw.ka.tinf22b5.terminal.CursorDirection;
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
+import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 
 import java.io.IOException;
 
 public class ConfigDialog extends Dialog {
+
     @Override
-    public void print() {
-        System.out.println("Configuration");
-        System.out.println("- Network Device -");
-        System.out.println("None"); //TODO load from config
+    public void render(TerminalRenderingBuffer terminalRenderingBuffer) {
+        terminalRenderingBuffer.addString("Configuration");
+        terminalRenderingBuffer.nextLine();
+        terminalRenderingBuffer.addString("- Network Device -");
+        terminalRenderingBuffer.nextLine();
+        terminalRenderingBuffer.addString("None"); //TODO load from config
+        terminalRenderingBuffer.nextLine();
     }
 
     @Override
