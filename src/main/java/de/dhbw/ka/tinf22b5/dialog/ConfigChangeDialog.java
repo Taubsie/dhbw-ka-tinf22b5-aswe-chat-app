@@ -29,7 +29,12 @@ public class ConfigChangeDialog extends Dialog {
         terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.addString("Changing: " + configOption.getDisplayName());
         terminalRenderingBuffer.nextLine();
-        terminalRenderingBuffer.addString("Old value: " + repository.getConfigurationValue(configOption));
+        String value = repository.getConfigurationValue(configOption);
+        if(value != null) {
+            terminalRenderingBuffer.addString("Old value: " + value);
+        } else {
+            terminalRenderingBuffer.addString("No value set");
+        }
         terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.addString("Enter - Save value | Esc / STRG+Q - Discard changes");
         terminalRenderingBuffer.nextLine();
