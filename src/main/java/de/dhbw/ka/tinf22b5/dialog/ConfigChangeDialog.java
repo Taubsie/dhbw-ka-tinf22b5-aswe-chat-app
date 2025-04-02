@@ -28,6 +28,7 @@ public class ConfigChangeDialog extends Dialog {
         terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.addString("Changing: " + configOption.getDisplayName());
+        terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.addString("Old value: " + repository.getConfigurationValue(configOption));
         terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.addString("Enter - Save value | Esc / STRG+Q - Discard changes");
@@ -52,7 +53,9 @@ public class ConfigChangeDialog extends Dialog {
                 break;
 
             case TerminalKey.TK_ENTER:
-                repository.setConfigurationValue(configOption, newValue);
+                if(!newValue.isBlank()) {
+                    repository.setConfigurationValue(configOption, newValue);
+                }
             case TerminalKey.TK_CTRL_Q:
             case TerminalKey.TK_ESCAPE:
                 terminal.changeDialog(new ConfigDialog());

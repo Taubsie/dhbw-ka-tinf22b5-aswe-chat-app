@@ -63,6 +63,7 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
 
     @Override
     public TerminalRenderingBuffer addString(String string) {
+        if(string == null) return this;
         addBytes(string.getBytes(StandardCharsets.UTF_8));
         return this;
     }
