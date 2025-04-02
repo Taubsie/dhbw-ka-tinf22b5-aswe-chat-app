@@ -1,5 +1,8 @@
 package de.dhbw.ka.tinf22b5.dialog;
 
+import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
+import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
+import de.dhbw.ka.tinf22b5.configuration.FileConfigurationRepository;
 import de.dhbw.ka.tinf22b5.terminal.CursorDirection;
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
@@ -7,18 +10,26 @@ import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class ConfigDialog extends Dialog {
+    private final ConfigurationRepository repository;
+
+    public ConfigDialog() {
+        repository = new FileConfigurationRepository();
+    }
 
     @Override
     public void render(TerminalRenderingBuffer terminalRenderingBuffer) {
         terminalRenderingBuffer.setCursurVisible(true);
         terminalRenderingBuffer.addString("Configuration");
         terminalRenderingBuffer.nextLine();
-        terminalRenderingBuffer.addString("- Network Device -");
-        terminalRenderingBuffer.nextLine();
-        terminalRenderingBuffer.addString("None"); //TODO load from config
-        terminalRenderingBuffer.nextLine();
+        for (ConfigurationKey configurationKey : ConfigurationKey.values()) {
+            terminalRenderingBuffer.addString("- " + configurationKey.getDisplayName() + " -");
+            terminalRenderingBuffer.nextLine();
+            terminalRenderingBuffer.addString(repository.getConfigurationValue(configurationKey));
+            terminalRenderingBuffer.nextLine();
+        }
     }
 
     @Override
@@ -26,13 +37,13 @@ public class ConfigDialog extends Dialog {
         switch (event.getTerminalKey()) {
             case TerminalKey.TK_UP, TerminalKey.TK_W, TerminalKey.TK_w -> {
                 terminal.moveCursor(CursorDirection.UP);
-                if(terminal.getCursorY() % 2 == 0) {
+                if (terminal.getCursorY() % 2 == 0) {
                     terminal.moveCursor(CursorDirection.UP);
                 }
             }
             case TerminalKey.TK_DOWN, TerminalKey.TK_S, TerminalKey.TK_s -> {
                 terminal.moveCursor(CursorDirection.DOWN);
-                if(terminal.getCursorY() % 2 == 0) {
+                if (terminal.getCursorY() % 2 == 0) {
                     terminal.moveCursor(CursorDirection.DOWN);
                 }
             }
@@ -40,15 +51,18 @@ public class ConfigDialog extends Dialog {
                  TerminalKey.TK_a -> {
             }
             case TerminalKey.TK_ENTER -> {
-                String /*TODO make enum*/ config = switch (terminal.getCursorY()) {
-                    case 3 -> "Network Device";
-                    default -> null;
-                };
+                if (terminal.getCursorY() < 3) {
+                    break;
+                }
 
-                if(config != null) {
-                    terminal.changeDialog(new ConfigChangeDialog(config));
+                // 3 -> 0; 5 -> 1; 7 -> 2; 9 -> 3
+                Optional<ConfigurationKey> config = ConfigurationKey.getByOrdinal(((terminal.getCursorY() - 1) / 2) - 1);
+
+                if (config.isPresent()) {
+                    terminal.changeDialog(new ConfigChangeDialog(repository, config.get()));
                 }
             }
+            case TerminalKey.TK_r, TerminalKey.TK_R -> repository.loadConfiguration();
             default -> super.handleInput(event, terminal);
         }
     }

@@ -1,5 +1,7 @@
 package de.dhbw.ka.tinf22b5.dialog;
 
+import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
+import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.terminal.CursorDirection;
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
@@ -10,11 +12,12 @@ import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 import java.io.IOException;
 
 public class ConfigChangeDialog extends Dialog {
-    private final String configOption;
+    private final ConfigurationRepository repository;
+    private final ConfigurationKey configOption;
     private String newValue = "";
 
-    public ConfigChangeDialog(String configOption) {
-        //TODO make enum / similar
+    public ConfigChangeDialog(ConfigurationRepository repository, ConfigurationKey configOption) {
+        this.repository = repository;
         this.configOption = configOption;
     }
 
@@ -24,7 +27,8 @@ public class ConfigChangeDialog extends Dialog {
         terminalRenderingBuffer.addString(newValue);
         terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.nextLine();
-        terminalRenderingBuffer.addString("Changing: " + configOption);
+        terminalRenderingBuffer.addString("Changing: " + configOption.getDisplayName());
+        terminalRenderingBuffer.addString("Old value: " + repository.getConfigurationValue(configOption));
         terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.addString("Enter - Save value | Esc / STRG+Q - Discard changes");
         terminalRenderingBuffer.nextLine();
@@ -48,7 +52,7 @@ public class ConfigChangeDialog extends Dialog {
                 break;
 
             case TerminalKey.TK_ENTER:
-                //TODO save config option
+                repository.setConfigurationValue(configOption, newValue);
             case TerminalKey.TK_CTRL_Q:
             case TerminalKey.TK_ESCAPE:
                 terminal.changeDialog(new ConfigDialog());
