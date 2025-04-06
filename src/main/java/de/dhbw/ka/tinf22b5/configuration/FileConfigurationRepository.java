@@ -22,17 +22,13 @@ public class FileConfigurationRepository extends FileStorage implements Configur
 
     @Override
     public Optional<Integer> getIntConfigurationValue(ConfigurationKey key) {
-        Optional<String> value = getConfigurationValue(key);
-
-        if(value.isPresent()) {
+        return getConfigurationValue(key).map((v) -> {
             try {
-                return Optional.of(Integer.parseInt(value.get()));
-            } catch (NumberFormatException e) {
-                return Optional.empty();
+                return Integer.parseInt(v);
+            } catch (NumberFormatException ignored) {
+                return null;
             }
-        } else {
-            return Optional.empty();
-        }
+        });
     }
 
     @Override
