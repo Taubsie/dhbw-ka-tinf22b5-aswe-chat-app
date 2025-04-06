@@ -10,7 +10,6 @@ import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Optional;
 
 public class ConfigDialog extends Dialog {
