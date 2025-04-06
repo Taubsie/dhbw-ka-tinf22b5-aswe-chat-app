@@ -56,6 +56,12 @@ public class FileConfigurationRepository extends FileStorage implements Configur
     }
 
     @Override
+    public void removeConfigurationValue(ConfigurationKey key) {
+        properties.remove(key.getKey());
+        saveConfiguration();
+    }
+
+    @Override
     public void saveConfiguration() {
         try {
             properties.store(Files.newBufferedWriter(getFilePath()), null);

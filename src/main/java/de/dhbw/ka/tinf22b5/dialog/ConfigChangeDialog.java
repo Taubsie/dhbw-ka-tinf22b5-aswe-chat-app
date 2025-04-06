@@ -61,6 +61,8 @@ public class ConfigChangeDialog extends Dialog {
             case TerminalKey.TK_ENTER:
                 if(!newValue.isBlank()) {
                     repository.setConfigurationValue(configOption, newValue);
+                } else {
+                    repository.removeConfigurationValue(configOption);
                 }
             case TerminalKey.TK_CTRL_Q:
             case TerminalKey.TK_ESCAPE:

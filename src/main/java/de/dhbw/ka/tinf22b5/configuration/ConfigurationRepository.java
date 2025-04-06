@@ -8,6 +8,7 @@ public interface ConfigurationRepository {
     void loadConfiguration();
 
     void setConfigurationValue(ConfigurationKey key, String value);
+    void removeConfigurationValue(ConfigurationKey key);
 
     void saveConfiguration();
 }
