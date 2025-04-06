@@ -7,7 +7,7 @@ public abstract class FileStorage {
     public abstract String getFileName();
 
     public Path getDirectoryPath() {
-        return Path.of(System.getProperty("user.home"), "aswe-chat-app", getDirectoryName());
+        return Path.of(System.getProperty("user.home"), ".aswe-chat-app", getDirectoryName());
     }
 
     public Path getFilePath() {
