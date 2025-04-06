@@ -5,7 +5,9 @@ import java.util.Optional;
 
 public enum ConfigurationKey {
     NETWORK_INTERFACE("network_interface", "Network device"),
-    USERNAME("username", "Username");
+    USERNAME("username", "Username"),
+    BROADCAST_IP_ADDRESS("broadcast_ip_address", "Broadcast ip address"),
+    BROADCAST_PORT("broadcast_port", "Broadcast port");
 
     private final String key;
     private final String displayName;
