@@ -21,6 +21,21 @@ public class FileConfigurationRepository extends FileStorage implements Configur
     }
 
     @Override
+    public Optional<Integer> getIntConfigurationValue(ConfigurationKey key) {
+        Optional<String> value = getConfigurationValue(key);
+
+        if(value.isPresent()) {
+            try {
+                return Optional.of(Integer.parseInt(value.get()));
+            } catch (NumberFormatException e) {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public void loadConfiguration() {
         Path directoryPath = getDirectoryPath();
 
@@ -53,6 +68,11 @@ public class FileConfigurationRepository extends FileStorage implements Configur
     public void setConfigurationValue(ConfigurationKey key, String value) {
         properties.setProperty(key.getKey(), value);
         saveConfiguration();
+    }
+
+    @Override
+    public void setIntConfigurationValue(ConfigurationKey key, int value) {
+        setConfigurationValue(key, Integer.toString(value));
     }
 
     @Override
