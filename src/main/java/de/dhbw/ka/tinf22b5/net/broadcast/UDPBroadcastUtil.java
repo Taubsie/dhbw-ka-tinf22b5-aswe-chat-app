@@ -71,7 +71,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
     }
 
     private InetAddress getBroadcastAddress() {
-        InetAddress multicastAddress = null;
+        InetAddress multicastAddress;
 
         try {
                 multicastAddress = InetAddress.getByName(configurationRepository.getConfigurationValue(ConfigurationKey.BROADCAST_IP_ADDRESS)
@@ -231,7 +231,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
     }
 
     public static void main(String[] args) {
-        ConfigurationRepository configurationRepository = new FileConfigurationRepository();;
+        ConfigurationRepository configurationRepository = new FileConfigurationRepository();
 
         new Thread(() -> {
             try {
