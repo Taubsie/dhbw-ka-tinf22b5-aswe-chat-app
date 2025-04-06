@@ -10,6 +10,7 @@ import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyType;
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class ConfigChangeDialog extends Dialog {
     private final ConfigurationRepository repository;
@@ -29,9 +30,9 @@ public class ConfigChangeDialog extends Dialog {
         terminalRenderingBuffer.nextLine();
         terminalRenderingBuffer.addString("Changing: " + configOption.getDisplayName());
         terminalRenderingBuffer.nextLine();
-        String value = repository.getConfigurationValue(configOption);
-        if(value != null) {
-            terminalRenderingBuffer.addString("Old value: " + value);
+        Optional<String> value = repository.getConfigurationValue(configOption);
+        if(value.isPresent()) {
+            terminalRenderingBuffer.addString("Old value: " + value.get());
         } else {
             terminalRenderingBuffer.addString("No value set");
         }

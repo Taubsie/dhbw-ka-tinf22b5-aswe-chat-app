@@ -28,8 +28,8 @@ public class ConfigDialog extends Dialog {
         for (ConfigurationKey configurationKey : ConfigurationKey.values()) {
             terminalRenderingBuffer.addString("- " + configurationKey.getDisplayName() + " -");
             terminalRenderingBuffer.nextLine();
-            String value = repository.getConfigurationValue(configurationKey);
-            terminalRenderingBuffer.addString(Objects.requireNonNullElse(value, "No value set"));
+            Optional<String> value = repository.getConfigurationValue(configurationKey);
+            terminalRenderingBuffer.addString(value.orElse("No value set"));
             terminalRenderingBuffer.nextLine();
         }
     }
