@@ -10,7 +10,9 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UDPBroadcastUtil implements BroadcastUtil {
@@ -24,6 +26,9 @@ public class UDPBroadcastUtil implements BroadcastUtil {
 
     private MulticastSocket multicastSocket;
     private final AtomicBoolean running;
+    private final AtomicBoolean shouldStop;
+    private Thread listenerThread;
+    private final Set<BroadcastPacketListener> broadcastPacketListeners;
 
     private final ConfigurationRepository configurationRepository;
 
@@ -33,7 +38,10 @@ public class UDPBroadcastUtil implements BroadcastUtil {
 
     public UDPBroadcastUtil(@NotNull ConfigurationRepository configurationRepository) {
         this.configurationRepository = configurationRepository;
+
         this.running = new AtomicBoolean(false);
+        this.shouldStop = new AtomicBoolean(true);
+        this.broadcastPacketListeners = new HashSet<>();
     }
 
     @Override
@@ -85,6 +93,8 @@ public class UDPBroadcastUtil implements BroadcastUtil {
             return;
         }
 
+        closeListenerThread();
+
         try {
             this.multicastSocket.leaveGroup(this.multicastAddress);
             this.multicastSocket.close();
@@ -95,14 +105,64 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         running.set(false);
     }
 
+    private synchronized void openListenerThread() {
+        if (!this.shouldStop.get()) {
+            return;
+        }
+
+        this.shouldStop.set(false);
+        this.listenerThread = getListenerThread();
+        this.listenerThread.start();
+    }
+
+    private synchronized void closeListenerThread() {
+        if (this.shouldStop.get()) {
+            return;
+        }
+
+        this.shouldStop.set(true);
+
+        try {
+            this.listenerThread.join();
+        } catch (InterruptedException _) {
+        }
+        this.listenerThread = null;
+    }
+
+    private Thread getListenerThread() {
+        return new Thread(() -> {
+
+            Optional<DatagramPacket> packet;
+            while (!shouldStop.get()) {
+                packet = receiveBroadcastPacket();
+                if (packet.isPresent()) {
+                    Set<BroadcastPacketListener> listeners;
+                    synchronized (broadcastPacketListeners) {
+                        listeners = new HashSet<>(broadcastPacketListeners);
+                    }
+
+                    for (BroadcastPacketListener listener : listeners) {
+                        listener.packetReceived(packet.get());
+                    }
+                }
+            }
+        });
+    }
+
     @Override
     public void addBroadcastListener(BroadcastPacketListener broadcastPacketListener) {
+        synchronized (broadcastPacketListeners) {
+            broadcastPacketListeners.add(broadcastPacketListener);
+        }
 
+        openListenerThread();
     }
 
     @Override
     public void removeBroadcastListener(BroadcastPacketListener broadcastPacketListener) {
-
+        synchronized (broadcastPacketListeners) {
+            broadcastPacketListeners.add(broadcastPacketListener);
+        }
     }
 
     @Override
@@ -121,9 +181,9 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         }
     }
 
-    @Override
-    public Optional<DatagramPacket> receiveBroadcastPacket() {
-        if(!running.get()) {
+    // TODO: use abstraction for datagram packet
+    private Optional<DatagramPacket> receiveBroadcastPacket() {
+        if (!running.get()) {
             return Optional.empty();
         }
 
@@ -142,8 +202,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         new Thread(() -> {
             try {
                 Thread.sleep(500);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
@@ -155,12 +214,12 @@ public class UDPBroadcastUtil implements BroadcastUtil {
 
         try (UDPBroadcastUtil util = new UDPBroadcastUtil()) {
             util.open();
-            Optional<DatagramPacket> packet = util.receiveBroadcastPacket();
-            if (packet.isPresent()) {
-                DatagramPacket datagramPacket = packet.get();
-                System.out.printf("%s: %s\r\n", datagramPacket.getAddress(), new String(datagramPacket.getData()));
-            } else {
-                System.out.println("empty packet");
+            util.addBroadcastListener(p -> System.out.println(new String(p.getData(), 0, p.getLength())));
+
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
     }
