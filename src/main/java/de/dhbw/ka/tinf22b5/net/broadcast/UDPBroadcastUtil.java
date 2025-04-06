@@ -3,14 +3,13 @@ package de.dhbw.ka.tinf22b5.net.broadcast;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.EmptyConfigurationRepository;
+import de.dhbw.ka.tinf22b5.configuration.FileConfigurationRepository;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,11 +17,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class UDPBroadcastUtil implements BroadcastUtil {
     private static final String DEFAULT_BROADCAST_IP = "233.1.33.69";
     private static final int DEFAULT_PORT = 1337;
+
     private static final int BUFFER_SIZE = 1024;
     private static final int SOCKET_TIMEOUT = 1000; // 1s timeout
 
+    private static final String NI_PING_ADDRESS = "google.com";
+    private static final int HTTP_PORT = 80;
+
     private InetAddress multicastAddress;
     private int multicastPort;
+    private NetworkInterface networkInterface;
 
     private MulticastSocket multicastSocket;
     private final AtomicBoolean running;
@@ -52,12 +56,13 @@ public class UDPBroadcastUtil implements BroadcastUtil {
 
         this.multicastAddress = getBroadcastAddress();
         this.multicastPort = getBroadcastPort();
+        this.networkInterface = getNetworkInterface();
 
         try {
             this.multicastSocket = new MulticastSocket(DEFAULT_PORT);
             this.multicastSocket.setSoTimeout(SOCKET_TIMEOUT);
 
-            this.multicastSocket.joinGroup(this.multicastAddress);
+            this.multicastSocket.joinGroup(new InetSocketAddress(this.multicastAddress, this.multicastPort), networkInterface);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -87,6 +92,33 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         return configurationRepository.getIntConfigurationValue(ConfigurationKey.BROADCAST_PORT).orElse(DEFAULT_PORT);
     }
 
+    private NetworkInterface getNetworkInterface() {
+        NetworkInterface networkInterface = getDefaultNetworkInterface();
+
+        try {
+            networkInterface = NetworkInterface.getByName(configurationRepository.getConfigurationValue(ConfigurationKey.NETWORK_INTERFACE).orElseThrow());
+        } catch (SocketException | NoSuchElementException _) {
+        }
+
+        return networkInterface;
+    }
+
+    private NetworkInterface getDefaultNetworkInterface() {
+        try (DatagramSocket socket = new DatagramSocket()) {
+            InetAddress address = InetAddress.getByName(NI_PING_ADDRESS);
+            socket.connect(address, HTTP_PORT);
+            return NetworkInterface.getByInetAddress(socket.getLocalAddress());
+        } catch (UnknownHostException | SocketException _) {
+        }
+
+        try {
+            return NetworkInterface.getByIndex(0);
+        } catch (SocketException _) {
+        }
+
+        return null;
+    }
+
     @Override
     public synchronized void close() {
         if(!running.get()) {
@@ -96,7 +128,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         closeListenerThread();
 
         try {
-            this.multicastSocket.leaveGroup(this.multicastAddress);
+            this.multicastSocket.leaveGroup(new InetSocketAddress(this.multicastAddress, this.multicastPort), networkInterface);
             this.multicastSocket.close();
         } catch (IOException _) {
             // ignoring closing errors
@@ -199,6 +231,8 @@ public class UDPBroadcastUtil implements BroadcastUtil {
     }
 
     public static void main(String[] args) {
+        ConfigurationRepository configurationRepository = new FileConfigurationRepository();;
+
         new Thread(() -> {
             try {
                 Thread.sleep(500);
@@ -206,15 +240,15 @@ public class UDPBroadcastUtil implements BroadcastUtil {
                 throw new RuntimeException(e);
             }
 
-            try (UDPBroadcastUtil util = new UDPBroadcastUtil()) {
+            try (UDPBroadcastUtil util = new UDPBroadcastUtil(configurationRepository)) {
                 util.open();
                 util.sendBroadcastPacket("Hello World"::getBytes);
             }
         }).start();
 
-        try (UDPBroadcastUtil util = new UDPBroadcastUtil()) {
+        try (UDPBroadcastUtil util = new UDPBroadcastUtil(configurationRepository)) {
             util.open();
-            util.addBroadcastListener(p -> System.out.println(new String(p.getData(), 0, p.getLength())));
+            util.addBroadcastListener(p -> System.out.println(p.getAddress() + ": " + new String(p.getData(), 0, p.getLength())));
 
             try {
                 Thread.sleep(5000);
