@@ -3,7 +3,6 @@ package de.dhbw.ka.tinf22b5.net.broadcast;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.EmptyConfigurationRepository;
-import de.dhbw.ka.tinf22b5.configuration.FileConfigurationRepository;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -236,8 +235,6 @@ public class UDPBroadcastUtil implements BroadcastUtil {
     }
 
     public static void main(String[] args) {
-        ConfigurationRepository configurationRepository = new FileConfigurationRepository();
-
         new Thread(() -> {
             try {
                 Thread.sleep(500);
@@ -245,15 +242,17 @@ public class UDPBroadcastUtil implements BroadcastUtil {
                 throw new RuntimeException(e);
             }
 
-            try (UDPBroadcastUtil util = new UDPBroadcastUtil(configurationRepository)) {
+            try (UDPBroadcastUtil util = new UDPBroadcastUtil()) {
+                util.attachShutdownHook();
                 util.open();
                 util.sendBroadcastPacket("Hello World"::getBytes);
             }
         }).start();
 
-        try (UDPBroadcastUtil util = new UDPBroadcastUtil(configurationRepository)) {
+        try (UDPBroadcastUtil util = new UDPBroadcastUtil()) {
+            util.attachShutdownHook();
             util.open();
-            util.addBroadcastListener(p -> System.out.println(p.getAddress() + ": " + new String(p.getData(), 0, p.getLength())));
+            util.addBroadcastListener(p -> System.out.println( Thread.currentThread().getName() + ": " + p.getAddress() + ": " + new String(p.getData(), 0, p.getLength())));
 
             try {
                 Thread.sleep(5000);
