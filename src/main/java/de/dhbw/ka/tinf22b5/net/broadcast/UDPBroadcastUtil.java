@@ -162,7 +162,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
     }
 
     private Thread getListenerThread() {
-        return new Thread(() -> {
+        Thread listenerThread = new Thread(() -> {
 
             Optional<DatagramPacket> packet;
             while (!shouldStop.get()) {
@@ -179,6 +179,11 @@ public class UDPBroadcastUtil implements BroadcastUtil {
                 }
             }
         });
+
+        listenerThread.setDaemon(true);
+        listenerThread.setName("UDPBroadcastListenerThread");
+
+        return listenerThread;
     }
 
     @Override
