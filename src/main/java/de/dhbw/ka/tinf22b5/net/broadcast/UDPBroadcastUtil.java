@@ -197,7 +197,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
     @Override
     public void removeBroadcastListener(BroadcastPacketListener broadcastPacketListener) {
         synchronized (broadcastPacketListeners) {
-            broadcastPacketListeners.add(broadcastPacketListener);
+            broadcastPacketListeners.remove(broadcastPacketListener);
         }
     }
 
