@@ -4,12 +4,13 @@ import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.EmptyConfigurationRepository;
 import de.dhbw.ka.tinf22b5.net.broadcast.packets.RawReceivedBroadcastPacket;
-import de.dhbw.ka.tinf22b5.net.broadcast.packets.ReceivingBroadcastPacket;
 import de.dhbw.ka.tinf22b5.net.broadcast.packets.SendingBroadcastPacket;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -164,17 +165,29 @@ public class UDPBroadcastUtil implements BroadcastUtil {
     private Thread getListenerThread() {
         Thread listenerThread = new Thread(() -> {
 
-            Optional<ReceivingBroadcastPacket> packet;
+            Optional<DatagramPacket> receivedPacket;
+            RawReceivedBroadcastPacket rawPacket;
+            DatagramPacket packet;
             while (!shouldStop.get()) {
-                packet = receiveBroadcastPacket();
-                if (packet.isPresent()) {
+                receivedPacket = receiveBroadcastPacket();
+
+                if (receivedPacket.isPresent()) {
+                    packet = receivedPacket.get();
+                    rawPacket = new RawReceivedBroadcastPacket(Arrays.copyOfRange(packet.getData(), 8, packet.getLength()), packet.getAddress());
+
+                    long senderPID = arrayToLong(packet.getData());
+                    long ownPID = ProcessHandle.current().pid();
+
+                    if (addressIsLocalAddress(packet.getAddress()) && senderPID == ownPID)
+                        continue;
+
                     Set<BroadcastPacketListener> listeners;
                     synchronized (broadcastPacketListeners) {
                         listeners = new HashSet<>(broadcastPacketListeners);
                     }
 
                     for (BroadcastPacketListener listener : listeners) {
-                        listener.packetReceived(packet.get());
+                        listener.packetReceived(rawPacket);
                     }
                 }
             }
@@ -184,6 +197,43 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         listenerThread.setName("UDPBroadcastListenerThread");
 
         return listenerThread;
+    }
+
+    private long arrayToLong(byte[] bytes) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        buffer.order(ByteOrder.BIG_ENDIAN);
+        buffer.position(0);
+        return buffer.getLong();
+    }
+
+    private byte[] longToArray(long l) {
+        ByteBuffer buffer = ByteBuffer.allocate(8);
+        buffer.order(ByteOrder.BIG_ENDIAN);
+        buffer.putLong(l);
+        return buffer.array();
+    }
+
+    private boolean addressIsLocalAddress(InetAddress address) {
+        try {
+            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+
+            while (networkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = networkInterfaces.nextElement();
+
+                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress networkAddress = addresses.nextElement();
+                    if (networkAddress.equals(address)) {
+                        return true;
+                    }
+                }
+            }
+
+        } catch (SocketException e) {
+            return false;
+        }
+
+        return false;
     }
 
     @Override
@@ -208,7 +258,14 @@ public class UDPBroadcastUtil implements BroadcastUtil {
             return;
         }
 
-        byte[] data = broadcastPacket.getData();
+        long processPID = ProcessHandle.current().pid();
+
+        byte[] packetData = broadcastPacket.getData();
+        byte[] data = new byte[packetData.length + 8];
+
+        System.arraycopy(longToArray(processPID), 0, data, 0, 8);
+        System.arraycopy(packetData, 0, data, 8, packetData.length);
+
         DatagramPacket packet = new DatagramPacket(data, data.length, multicastAddress, multicastPort);
         try {
             // TODO: Probably implement send acknowledge mechanism for better reliability
@@ -218,7 +275,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         }
     }
 
-    private Optional<ReceivingBroadcastPacket> receiveBroadcastPacket() {
+    private Optional<DatagramPacket> receiveBroadcastPacket() {
         if (!running.get()) {
             return Optional.empty();
         }
@@ -229,9 +286,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         try {
             this.multicastSocket.receive(packet);
 
-            RawReceivedBroadcastPacket rawPacket =
-                    new RawReceivedBroadcastPacket(Arrays.copyOfRange(packet.getData(), 0, packet.getLength()), packet.getAddress());
-            return Optional.of(rawPacket);
+            return Optional.of(packet);
         } catch (IOException e) {
             return Optional.empty();
         }
