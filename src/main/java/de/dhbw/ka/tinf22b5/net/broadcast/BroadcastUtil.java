@@ -1,5 +1,7 @@
 package de.dhbw.ka.tinf22b5.net.broadcast;
 
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.SendingBroadcastPacket;
+
 import java.io.Closeable;
 
 public interface BroadcastUtil extends Closeable {

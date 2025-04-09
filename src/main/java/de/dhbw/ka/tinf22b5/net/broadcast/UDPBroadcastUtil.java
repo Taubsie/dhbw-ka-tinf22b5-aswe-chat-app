@@ -3,14 +3,14 @@ package de.dhbw.ka.tinf22b5.net.broadcast;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.EmptyConfigurationRepository;
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.RawReceivedBroadcastPacket;
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.ReceivingBroadcastPacket;
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.SendingBroadcastPacket;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UDPBroadcastUtil implements BroadcastUtil {
@@ -163,7 +163,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
     private Thread getListenerThread() {
         Thread listenerThread = new Thread(() -> {
 
-            Optional<DatagramPacket> packet;
+            Optional<ReceivingBroadcastPacket> packet;
             while (!shouldStop.get()) {
                 packet = receiveBroadcastPacket();
                 if (packet.isPresent()) {
@@ -217,8 +217,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         }
     }
 
-    // TODO: use abstraction for datagram packet
-    private Optional<DatagramPacket> receiveBroadcastPacket() {
+    private Optional<ReceivingBroadcastPacket> receiveBroadcastPacket() {
         if (!running.get()) {
             return Optional.empty();
         }
@@ -228,7 +227,10 @@ public class UDPBroadcastUtil implements BroadcastUtil {
 
         try {
             this.multicastSocket.receive(packet);
-            return Optional.of(packet);
+
+            RawReceivedBroadcastPacket rawPacket =
+                    new RawReceivedBroadcastPacket(Arrays.copyOfRange(packet.getData(), 0, packet.getLength()), packet.getAddress());
+            return Optional.of(rawPacket);
         } catch (IOException e) {
             return Optional.empty();
         }
@@ -252,7 +254,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         try (UDPBroadcastUtil util = new UDPBroadcastUtil()) {
             util.attachShutdownHook();
             util.open();
-            util.addBroadcastListener(p -> System.out.println( Thread.currentThread().getName() + ": " + p.getAddress() + ": " + new String(p.getData(), 0, p.getLength())));
+            util.addBroadcastListener(p -> System.out.printf("%s: %s: %s\r\n", Thread.currentThread().getName(), p.getRemoteAddress(), new String(p.getData())));
 
             try {
                 Thread.sleep(5000);
