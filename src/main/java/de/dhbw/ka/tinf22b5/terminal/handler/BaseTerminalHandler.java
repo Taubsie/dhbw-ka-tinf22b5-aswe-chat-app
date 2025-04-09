@@ -65,7 +65,7 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
             handleInput(event);
         }
 
-        System.out.write(renderingBuffer.clear().scrollScreenUp().setCursurVisible(true).getBuffer());
+        System.out.write(renderingBuffer.clear().scrollScreenUp().setCursorVisible(true).getBuffer());
     }
 
     public void handleInput(TerminalKeyEvent event) throws IOException {

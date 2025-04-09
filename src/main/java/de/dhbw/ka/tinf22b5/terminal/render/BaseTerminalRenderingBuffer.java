@@ -38,7 +38,7 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
     }
 
     @Override
-    public TerminalRenderingBuffer setCursurVisible(boolean visible) {
+    public TerminalRenderingBuffer setCursorVisible(boolean visible) {
         addBytes(0x1b, '[', '?', '2', '5', visible ? 'h' : 'l');
         return this;
     }

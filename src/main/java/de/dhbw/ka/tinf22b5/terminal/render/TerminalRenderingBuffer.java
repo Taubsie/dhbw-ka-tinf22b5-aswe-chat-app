@@ -6,7 +6,7 @@ public interface TerminalRenderingBuffer {
     TerminalRenderingBuffer scrollScreenUp();
     TerminalRenderingBuffer moveCursor(int x, int y);
 
-    TerminalRenderingBuffer setCursurVisible(boolean visible);
+    TerminalRenderingBuffer setCursorVisible(boolean visible);
 
     TerminalRenderingBuffer addBytes(byte... bytes);
     TerminalRenderingBuffer addBytes(int... bytes);

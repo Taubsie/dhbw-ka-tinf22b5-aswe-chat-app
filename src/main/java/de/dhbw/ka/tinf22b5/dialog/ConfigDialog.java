@@ -21,7 +21,7 @@ public class ConfigDialog extends Dialog {
 
     @Override
     public void render(TerminalRenderingBuffer terminalRenderingBuffer) {
-        terminalRenderingBuffer.setCursurVisible(true);
+        terminalRenderingBuffer.setCursorVisible(true);
         terminalRenderingBuffer.addString("Configuration");
         terminalRenderingBuffer.nextLine();
         for (ConfigurationKey configurationKey : ConfigurationKey.values()) {
