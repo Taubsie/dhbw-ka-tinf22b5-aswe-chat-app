@@ -4,6 +4,8 @@ import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.EmptyConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.InMemoryConfigurationRepository;
+import de.dhbw.ka.tinf22b5.net.broadcast.BroadcastUtil;
+import de.dhbw.ka.tinf22b5.net.broadcast.UDPBroadcastUtil;
 import de.dhbw.ka.tinf22b5.net.p2p.packets.P2PPacket;
 import de.dhbw.ka.tinf22b5.net.p2p.packets.RawP2PPacket;
 import org.jetbrains.annotations.NotNull;
@@ -192,32 +194,33 @@ public class TCPP2PUtil implements P2PUtil {
     }
 
     public static void main(String[] ignoredArgs) {
-        new Thread(() -> {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException _) {
-            }
 
-            ConfigurationRepository config = new InMemoryConfigurationRepository();
-            config.setIntConfigurationValue(ConfigurationKey.P2P_SERVER_PORT, 1338);
+        TCPP2PUtil p2pUtil = new TCPP2PUtil();
+        p2pUtil.attachShutdownHook();
+        p2pUtil.open();
+        p2pUtil.addP2PListener(p -> System.out.printf("%s: %s\r\n", p.getRemoteAddress(),new String(p.getData())));
 
-            try (TCPP2PUtil util = new TCPP2PUtil(config)) {
-                util.attachShutdownHook();
-                util.open();
-                util.sendP2PPacket(new RawP2PPacket("Hello World!".getBytes(), new InetSocketAddress(InetAddress.getLocalHost(), 1337)));
-            } catch (Exception _) {
-            }
-        }).start();
+        BroadcastUtil broadcastUtil = new UDPBroadcastUtil();
+        broadcastUtil.attachShutdownHook();
+        broadcastUtil.open();
+        broadcastUtil.addBroadcastListener(p -> {
+            System.out.println("Got broadcast recovery packet from " + p.getRemoteAddress());
+            p2pUtil.sendP2PPacket(new RawP2PPacket("Hello World!".getBytes(), new InetSocketAddress(p.getRemoteAddress(), 1337)));
+        });
 
-        try (TCPP2PUtil util = new TCPP2PUtil()) {
-            util.attachShutdownHook();
-            util.open();
-            util.addP2PListener(p -> System.out.printf("%s: %s: %s\r\n", Thread.currentThread().getName(), p.getRemoteAddress(), new String(p.getData())));
-
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException _) {
-            }
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException _) {
         }
+
+        broadcastUtil.sendBroadcastPacket(() -> new byte[0]);
+
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException _) {
+        }
+
+        p2pUtil.close();
+        broadcastUtil.close();
     }
 }
