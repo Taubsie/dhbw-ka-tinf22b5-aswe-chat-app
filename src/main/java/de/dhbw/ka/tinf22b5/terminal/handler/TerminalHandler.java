@@ -35,28 +35,21 @@ public interface TerminalHandler {
 
     void setCursorY(int y);
 
-    default void updateCursor(int x, int y) throws IOException {
+    default void updateCursor(int x, int y) {
         x = Math.min(getSize().width, Math.max(1, x));
         y = Math.min(getSize().height, Math.max(1, y));
 
         setCursorX(x);
         setCursorY(y);
-
-        // Sets the cursor position
-        System.out.write( (((char) 0x1b) + "[%d;%dH".formatted(y, x)).getBytes());
     }
     
-    default void moveCursor(CursorDirection direction) throws IOException {
+    default void moveCursor(CursorDirection direction) {
         switch (direction) {
             case UP -> updateCursor(getCursorX(), getCursorY() - 1);
             case DOWN -> updateCursor(getCursorX(), getCursorY() + 1);
             case LEFT -> updateCursor(getCursorX() - 1, getCursorY());
             case RIGHT -> updateCursor(getCursorX() + 1, getCursorY());
         }
-    }
-
-    default void clearTerminal() throws IOException {
-        System.out.write(new byte[] { 0x1b, '[', '2', 'J', 0x1b, '[', 'H' });
     }
 
     void changeDialog(Dialog dialog) throws IOException;

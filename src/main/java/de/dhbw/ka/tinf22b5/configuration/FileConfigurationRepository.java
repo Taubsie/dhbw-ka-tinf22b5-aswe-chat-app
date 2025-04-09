@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Properties;
 
 public class FileConfigurationRepository extends FileStorage implements ConfigurationRepository {
@@ -15,8 +16,19 @@ public class FileConfigurationRepository extends FileStorage implements Configur
     }
 
     @Override
-    public String getConfigurationValue(ConfigurationKey key) {
-        return properties.getProperty(key.getKey());
+    public Optional<String> getConfigurationValue(ConfigurationKey key) {
+        return Optional.ofNullable(properties.getProperty(key.getKey()));
+    }
+
+    @Override
+    public Optional<Integer> getIntConfigurationValue(ConfigurationKey key) {
+        return getConfigurationValue(key).map((v) -> {
+            try {
+                return Integer.parseInt(v);
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        });
     }
 
     @Override
@@ -51,6 +63,17 @@ public class FileConfigurationRepository extends FileStorage implements Configur
     @Override
     public void setConfigurationValue(ConfigurationKey key, String value) {
         properties.setProperty(key.getKey(), value);
+        saveConfiguration();
+    }
+
+    @Override
+    public void setIntConfigurationValue(ConfigurationKey key, int value) {
+        setConfigurationValue(key, Integer.toString(value));
+    }
+
+    @Override
+    public void removeConfigurationValue(ConfigurationKey key) {
+        properties.remove(key.getKey());
         saveConfiguration();
     }
 

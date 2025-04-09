@@ -7,8 +7,10 @@ import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyType;
+import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class ConfigChangeDialog extends Dialog {
     private final ConfigurationRepository repository;
@@ -21,12 +23,22 @@ public class ConfigChangeDialog extends Dialog {
     }
 
     @Override
-    public void print() {
-        System.out.println(newValue);
-        System.out.println();
-        System.out.println("Changing: " + configOption.getDisplayName());
-        System.out.println("Old value: " + repository.getConfigurationValue(configOption));
-        System.out.println("Enter - Save value | Esc / STRG+Q - Discard changes");
+    public void render(TerminalRenderingBuffer terminalRenderingBuffer) {
+        terminalRenderingBuffer.setCursurVisible(true);
+        terminalRenderingBuffer.addString(newValue);
+        terminalRenderingBuffer.nextLine();
+        terminalRenderingBuffer.nextLine();
+        terminalRenderingBuffer.addString("Changing: " + configOption.getDisplayName());
+        terminalRenderingBuffer.nextLine();
+        Optional<String> value = repository.getConfigurationValue(configOption);
+        if(value.isPresent()) {
+            terminalRenderingBuffer.addString("Old value: " + value.get());
+        } else {
+            terminalRenderingBuffer.addString("No value set");
+        }
+        terminalRenderingBuffer.nextLine();
+        terminalRenderingBuffer.addString("Enter - Save value | Esc / STRG+Q - Discard changes");
+        terminalRenderingBuffer.nextLine();
     }
 
     @Override
@@ -47,7 +59,11 @@ public class ConfigChangeDialog extends Dialog {
                 break;
 
             case TerminalKey.TK_ENTER:
-                repository.setConfigurationValue(configOption, newValue);
+                if(!newValue.isBlank()) {
+                    repository.setConfigurationValue(configOption, newValue);
+                } else {
+                    repository.removeConfigurationValue(configOption);
+                }
             case TerminalKey.TK_CTRL_Q:
             case TerminalKey.TK_ESCAPE:
                 terminal.changeDialog(new ConfigDialog());

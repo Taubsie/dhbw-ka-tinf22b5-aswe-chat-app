@@ -5,6 +5,7 @@ import de.dhbw.ka.tinf22b5.terminal.exception.TerminalHandlerException;
 import de.dhbw.ka.tinf22b5.terminal.handler.BaseTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.handler.lin.LinuxTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.handler.win.WindowsTerminalHandler;
+import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalRenderingBuffer;
 
 import java.io.IOException;
 
@@ -25,9 +26,11 @@ public class Main {
             e.printStackTrace();
         }
 
-        terminal.run();
+        BaseTerminalRenderingBuffer renderingBuffer = new BaseTerminalRenderingBuffer();
+        renderingBuffer.scrollScreenUp();
+        System.out.write(renderingBuffer.getBuffer());
 
-        terminal.clearTerminal();
+        terminal.run();
 
         // theoretically not needed when shutdown hook is attached
         try {

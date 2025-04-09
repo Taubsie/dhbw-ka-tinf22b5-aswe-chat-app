@@ -7,6 +7,7 @@ import de.dhbw.ka.tinf22b5.terminal.CursorDirection;
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
+import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -19,11 +20,16 @@ public class ConfigDialog extends Dialog {
     }
 
     @Override
-    public void print() {
-        System.out.println("Configuration");
+    public void render(TerminalRenderingBuffer terminalRenderingBuffer) {
+        terminalRenderingBuffer.setCursurVisible(true);
+        terminalRenderingBuffer.addString("Configuration");
+        terminalRenderingBuffer.nextLine();
         for (ConfigurationKey configurationKey : ConfigurationKey.values()) {
-            System.out.println("- " + configurationKey.getDisplayName() + " -");
-            System.out.println(repository.getConfigurationValue(configurationKey));
+            terminalRenderingBuffer.addString("- " + configurationKey.getDisplayName() + " -");
+            terminalRenderingBuffer.nextLine();
+            Optional<String> value = repository.getConfigurationValue(configurationKey);
+            terminalRenderingBuffer.addString(value.orElse("No value set"));
+            terminalRenderingBuffer.nextLine();
         }
     }
 

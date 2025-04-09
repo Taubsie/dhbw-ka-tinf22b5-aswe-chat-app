@@ -3,8 +3,11 @@ package de.dhbw.ka.tinf22b5.terminal.handler;
 import de.dhbw.ka.tinf22b5.dialog.Dialog;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyParser;
+import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalRenderingBuffer;
+import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.Dimension;
 import java.io.IOException;
 
 public abstract class BaseTerminalHandler implements TerminalHandler {
@@ -15,10 +18,11 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
 
     private boolean running = true;
 
-    public BaseTerminalHandler(Dialog currentDialog) throws IOException {
-        this.currentDialog = currentDialog;
+    private final TerminalRenderingBuffer renderingBuffer;
 
-        updateTerminal();
+    public BaseTerminalHandler(Dialog currentDialog) {
+        this.currentDialog = currentDialog;
+        renderingBuffer = new BaseTerminalRenderingBuffer();
     }
 
     @Override
@@ -55,27 +59,38 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
         TerminalKeyParser terminalKeyParser = new TerminalKeyParser();
 
         while (running) {
-            TerminalKeyEvent event = terminalKeyParser.parseTerminalKeyInput(this, this.getChar());
+            updateTerminal();
 
+            TerminalKeyEvent event = terminalKeyParser.parseTerminalKeyInput(this, this.getChar());
             handleInput(event);
         }
+
+        System.out.write(renderingBuffer.clear().scrollScreenUp().setCursurVisible(true).getBuffer());
     }
 
     public void handleInput(TerminalKeyEvent event) throws IOException {
-        clearTerminal();
-
         currentDialog.handleInput(event, this);
-
-        updateTerminal();
     }
 
     public void updateTerminal() throws IOException {
-        clearTerminal();
+        renderingBuffer.clear();
+        renderingBuffer.clearScreen();
+        addEmptyPage(renderingBuffer);
+        renderingBuffer.clearScreen();
+        currentDialog.render(renderingBuffer);
+        renderingBuffer.moveCursor(cursorX, cursorY);
+        System.out.write(renderingBuffer.getBuffer());
+    }
 
-        //TODO rework to handle printing in the terminal handler class
-        currentDialog.print();
-
-        updateCursor(cursorX, cursorY);
+    private void addEmptyPage(TerminalRenderingBuffer renderingBuffer) {
+        Dimension terminalSize = this.getSize();
+        for (int row = 0; row < terminalSize.height; row++) {
+            for (int col = 0; col < terminalSize.width; col++) {
+                renderingBuffer.addString(" ");
+            }
+            if (row < terminalSize.height - 1)
+                renderingBuffer.nextLine();
+        }
     }
 
     public void quit() {
