@@ -7,7 +7,8 @@ public enum ConfigurationKey {
     NETWORK_INTERFACE("network_interface", "Network device"),
     USERNAME("username", "Username"),
     BROADCAST_IP_ADDRESS("broadcast_ip_address", "Broadcast ip address"),
-    BROADCAST_PORT("broadcast_port", "Broadcast port");
+    BROADCAST_PORT("broadcast_port", "Broadcast port"),
+    P2P_SERVER_PORT("p2p_port", "P2P socket port");
 
     private final String key;
     private final String displayName;
