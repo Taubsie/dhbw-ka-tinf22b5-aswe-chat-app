@@ -1,4 +1,7 @@
-package de.dhbw.ka.tinf22b5.terminal;
+package de.dhbw.ka.tinf22b5.terminal.key;
+
+import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
+import org.intellij.lang.annotations.MagicConstant;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -6,32 +9,38 @@ import java.util.Objects;
 
 public class TerminalKeyEvent {
 
+    private final TerminalHandler terminalHandler;
     private final byte[] utf8Chars;
     private final TerminalKeyType keyType;
     private final int terminalKey;
     private final int modifiers;
 
-    public TerminalKeyEvent() {
-        this(new byte[0]);
+    public TerminalKeyEvent(TerminalHandler terminalHandler) {
+        this(terminalHandler, new byte[0]);
     }
 
-    public TerminalKeyEvent(byte[] keys) {
-        this(keys, TerminalKeyType.TKT_UNKNOWN);
+    public TerminalKeyEvent(TerminalHandler terminalHandler, byte[] keys) {
+        this(terminalHandler, keys, TerminalKeyType.TKT_UNKNOWN);
     }
 
-    public TerminalKeyEvent(byte[] keys, TerminalKeyType keyType) {
-        this(keys, keyType, TerminalKey.TK_UNKNOWN);
+    public TerminalKeyEvent(TerminalHandler terminalHandler, byte[] keys, TerminalKeyType keyType) {
+        this(terminalHandler, keys, keyType, TerminalKey.TK_UNKNOWN);
     }
 
-    public TerminalKeyEvent(byte[] utf8Chars, TerminalKeyType keyType, int terminalKey) {
-        this(utf8Chars, keyType, terminalKey, 0);
+    public TerminalKeyEvent(TerminalHandler terminalHandler, byte[] utf8Chars, TerminalKeyType keyType, int terminalKey) {
+        this(terminalHandler, utf8Chars, keyType, terminalKey, 0);
     }
 
-    public TerminalKeyEvent(byte[] utf8Chars, TerminalKeyType keyType, int terminalKey, int modifiers) {
+    public TerminalKeyEvent(TerminalHandler terminalHandler, byte[] utf8Chars, TerminalKeyType keyType, int terminalKey, int modifiers) {
+        this.terminalHandler = terminalHandler;
         this.utf8Chars = utf8Chars;
         this.keyType = keyType;
         this.terminalKey = terminalKey;
         this.modifiers = modifiers;
+    }
+
+    public TerminalHandler getTerminalHandler() {
+        return terminalHandler;
     }
 
     public byte[] getUtf8Chars() {
@@ -42,7 +51,9 @@ public class TerminalKeyEvent {
         return keyType;
     }
 
+    @MagicConstant(flagsFromClass = TerminalKey.class)
     public int getTerminalKey() {
+        //noinspection MagicConstant
         return terminalKey;
     }
 
@@ -73,10 +84,21 @@ public class TerminalKeyEvent {
             prefix += "Alt + ";
         }
 
-        if (keyType == TerminalKeyType.TKT_ASCII || keyType == TerminalKeyType.TKT_UNICODE || keyType == TerminalKeyType.TKT_UNICODE_STRING)
-            return prefix + new String(utf8Chars, StandardCharsets.UTF_8);
+        String keyCharacter = getKeyCharacter();
+
+        if(!keyCharacter.isEmpty()) {
+            return prefix + keyCharacter;
+        }
 
         return prefix + TerminalKey.getKeyText(terminalKey);
+    }
+
+    public String getKeyCharacter() {
+        if (keyType == TerminalKeyType.TKT_ASCII || keyType == TerminalKeyType.TKT_UNICODE || keyType == TerminalKeyType.TKT_UNICODE_STRING) {
+            return new String(utf8Chars, StandardCharsets.UTF_8);
+        } else {
+            return "";
+        }
     }
 
     @Override

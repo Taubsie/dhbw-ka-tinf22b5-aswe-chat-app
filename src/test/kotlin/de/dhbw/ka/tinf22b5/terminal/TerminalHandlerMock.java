@@ -1,10 +1,15 @@
 package de.dhbw.ka.tinf22b5.terminal;
 
+import de.dhbw.ka.tinf22b5.dialog.Dialog;
+import de.dhbw.ka.tinf22b5.terminal.handler.BaseTerminalHandler;
+import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
+
 import java.awt.Dimension;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TerminalHandlerMock implements TerminalHandler {
+public class TerminalHandlerMock extends BaseTerminalHandler {
     private final List<KeyArrayCombination> inputQueue = new LinkedList<>();
     private int index = 0;
 
@@ -18,7 +23,11 @@ public class TerminalHandlerMock implements TerminalHandler {
         }
     }
 
-    TerminalHandlerMock() {
+    TerminalHandlerMock(Dialog currentDialog) throws IOException {
+        super(currentDialog);
+
+        //TODO fix missing terminal reference
+        /*
         // enter
         inputQueue.add(new KeyArrayCombination(new TerminalKeyEvent(new byte[]{0x1b}, TerminalKeyType.TKT_ASCII, 0x1b, 0), new byte[]{0x1b}));
 
@@ -27,6 +36,7 @@ public class TerminalHandlerMock implements TerminalHandler {
 
         // alt c
         inputQueue.add(new KeyArrayCombination(new TerminalKeyEvent(new byte[]{'c'}, TerminalKeyType.TKT_ASCII, TerminalKey.TK_c, TerminalKey.TK_MODIFIER_ALT), new byte[]{0x1b, 'c'}));
+        */
     }
 
     @Override
