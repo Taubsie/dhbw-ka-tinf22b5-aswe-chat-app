@@ -58,7 +58,8 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         this.networkInterface = getNetworkInterface();
 
         try {
-            this.multicastSocket = new MulticastSocket(DEFAULT_PORT);
+            this.multicastSocket = new MulticastSocket(this.multicastPort);
+            //this.multicastSocket.setOption(StandardSocketOptions.IP_MULTICAST_LOOP, false);
             this.multicastSocket.setSoTimeout(SOCKET_TIMEOUT);
 
             this.multicastSocket.joinGroup(new InetSocketAddress(this.multicastAddress, this.multicastPort), networkInterface);
