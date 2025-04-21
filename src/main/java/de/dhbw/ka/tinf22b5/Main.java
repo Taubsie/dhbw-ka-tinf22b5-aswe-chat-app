@@ -6,18 +6,18 @@ import de.dhbw.ka.tinf22b5.terminal.handler.BaseTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.handler.lin.LinuxTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.handler.win.WindowsTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalRenderingBuffer;
+import de.dhbw.ka.tinf22b5.util.OSUtil;
 
 import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        BaseTerminalHandler terminal;
-        // nicht schön aber funktioniert
-        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-            terminal = new WindowsTerminalHandler(new WelcomeDialog());
-        } else {
-            terminal = new LinuxTerminalHandler(new WelcomeDialog());
-        }
+
+        BaseTerminalHandler terminal = switch (OSUtil.getOS()) {
+            case WIN -> new WindowsTerminalHandler(new WelcomeDialog());
+            case LINUX -> new LinuxTerminalHandler(new WelcomeDialog());
+            default -> throw new RuntimeException("Unsupported OS: " + OSUtil.getOS());
+        };
 
         try {
             terminal.init();
