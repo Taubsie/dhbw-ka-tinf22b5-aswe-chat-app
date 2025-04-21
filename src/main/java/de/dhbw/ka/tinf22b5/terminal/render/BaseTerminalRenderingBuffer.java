@@ -17,6 +17,18 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
     }
 
     @Override
+    public TerminalRenderingBuffer alternateScreenEnable() {
+        addBytes(0x1b, '[', '?', '1', '0', '4', '9', 'h', 0x1b, '[', '2', '2', ';', '0', ';', '0', 't');
+        return this;
+    }
+
+    @Override
+    public TerminalRenderingBuffer alternateScreenDisable() {
+        addBytes(0x1b, '[', '?', '1', '0', '4', '9', 'l', 0x1b, '[', '2', '3', ';', '0', ';', '0', 't');
+        return this;
+    }
+
+    @Override
     public TerminalRenderingBuffer clearScreen() {
         addBytes(0x1b, '[', 'm');
         moveCursorToHome();

@@ -72,6 +72,9 @@ public class BaseTerminalHandler implements TerminalHandler {
     public void run() throws IOException, TerminalHandlerException {
         this.ioTerminalHandler.init();
 
+        // TODO: make cleaner
+        System.out.write(renderingBuffer.clear().alternateScreenEnable().getBuffer());
+
         TerminalKeyParser terminalKeyParser = new TerminalKeyParser();
 
         while (running) {
@@ -81,7 +84,8 @@ public class BaseTerminalHandler implements TerminalHandler {
             handleInput(this, event);
         }
 
-        System.out.write(renderingBuffer.clear().scrollScreenUp().setCursorVisible(true).getBuffer());
+        // TODO: make cleaner
+        System.out.write(renderingBuffer.clear().alternateScreenDisable().getBuffer());
     }
 
     public void handleInput(TerminalHandler terminalHandler, TerminalKeyEvent event) throws IOException {
@@ -91,22 +95,10 @@ public class BaseTerminalHandler implements TerminalHandler {
     public void updateTerminal() throws IOException {
         renderingBuffer.clear();
         renderingBuffer.clearScreen();
-        addEmptyPage(renderingBuffer);
-        renderingBuffer.clearScreen();
+        renderingBuffer.scrollScreenUp();
         currentDialog.render(renderingBuffer);
         renderingBuffer.moveCursor(cursorX, cursorY);
         System.out.write(renderingBuffer.getBuffer());
-    }
-
-    private void addEmptyPage(TerminalRenderingBuffer renderingBuffer) {
-        Dimension terminalSize = ioTerminalHandler.getSize();
-        for (int row = 0; row < terminalSize.height; row++) {
-            for (int col = 0; col < terminalSize.width; col++) {
-                renderingBuffer.addString(" ");
-            }
-            if (row < terminalSize.height - 1)
-                renderingBuffer.nextLine();
-        }
     }
 
     public Dimension getSize() {
