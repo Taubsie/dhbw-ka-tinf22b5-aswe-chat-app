@@ -1,15 +1,14 @@
-package de.dhbw.ka.tinf22b5.terminal.handler.win;
+package de.dhbw.ka.tinf22b5.terminal.iohandler.win;
 
-import de.dhbw.ka.tinf22b5.dialog.Dialog;
-import de.dhbw.ka.tinf22b5.terminal.handler.BaseTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.exception.TerminalHandlerException;
+import de.dhbw.ka.tinf22b5.terminal.iohandler.IOTerminalHandler;
 
 import java.awt.*;
 import java.io.IOException;
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
 
-public class WindowsTerminalHandler extends BaseTerminalHandler {
+public class WindowsTerminalHandler implements IOTerminalHandler {
 
     /* ---------------------
      * console mode constants
@@ -40,10 +39,6 @@ public class WindowsTerminalHandler extends BaseTerminalHandler {
     private int origOut;
 
     private MethodHandle hdlGetConsoleScreenBufferInfo;
-
-    public WindowsTerminalHandler(Dialog currentDialog) throws IOException {
-        super(currentDialog);
-    }
 
     @Override
     public void init() throws TerminalHandlerException {

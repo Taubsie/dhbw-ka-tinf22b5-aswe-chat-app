@@ -3,6 +3,7 @@ package de.dhbw.ka.tinf22b5.dialog;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.terminal.CursorDirection;
+import de.dhbw.ka.tinf22b5.terminal.handler.BaseTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
@@ -42,9 +43,10 @@ public class ConfigChangeDialog extends Dialog {
     }
 
     @Override
-    public void handleInput(TerminalKeyEvent event, TerminalHandler terminal) throws IOException {
+    public void handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
         if(event.getKeyType() == TerminalKeyType.TKT_ASCII || event.getKeyType() == TerminalKeyType.TKT_UNICODE) {
-            if(newValue.length() >= terminal.getSize().width) {
+            // TODO: extract bounds checking to rendering class
+            if(newValue.length() >= ((BaseTerminalHandler)terminal).getSize().width) {
                 return;
             }
 

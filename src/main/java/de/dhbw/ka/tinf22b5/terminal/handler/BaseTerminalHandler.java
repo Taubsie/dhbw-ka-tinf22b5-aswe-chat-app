@@ -1,6 +1,8 @@
 package de.dhbw.ka.tinf22b5.terminal.handler;
 
 import de.dhbw.ka.tinf22b5.dialog.Dialog;
+import de.dhbw.ka.tinf22b5.terminal.exception.TerminalHandlerException;
+import de.dhbw.ka.tinf22b5.terminal.iohandler.IOTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyParser;
 import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalRenderingBuffer;
@@ -10,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.Dimension;
 import java.io.IOException;
 
-public abstract class BaseTerminalHandler implements TerminalHandler {
+public class BaseTerminalHandler implements TerminalHandler {
     private Dialog currentDialog;
 
     private int cursorX = 1;
@@ -18,11 +20,14 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
 
     private boolean running = true;
 
+    private final IOTerminalHandler ioTerminalHandler;
     private final TerminalRenderingBuffer renderingBuffer;
 
-    public BaseTerminalHandler(Dialog currentDialog) {
+    public BaseTerminalHandler(Dialog currentDialog) throws TerminalHandlerException {
         this.currentDialog = currentDialog;
-        renderingBuffer = new BaseTerminalRenderingBuffer();
+
+        this.ioTerminalHandler = IOTerminalHandler.getTerminalHandler();
+        this.renderingBuffer = new BaseTerminalRenderingBuffer();
     }
 
     @Override
@@ -46,6 +51,15 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
     }
 
     @Override
+    public void updateCursor(int x, int y) {
+        x = Math.min(this.ioTerminalHandler.getSize().width, Math.max(1, x));
+        y = Math.min(this.ioTerminalHandler.getSize().height, Math.max(1, y));
+
+        setCursorX(x);
+        setCursorY(y);
+    }
+
+    @Override
     public void changeDialog(@NotNull Dialog dialog) throws IOException {
         currentDialog = dialog;
 
@@ -55,21 +69,23 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
         updateTerminal();
     }
 
-    public void run() throws IOException {
+    public void run() throws IOException, TerminalHandlerException {
+        this.ioTerminalHandler.init();
+
         TerminalKeyParser terminalKeyParser = new TerminalKeyParser();
 
         while (running) {
             updateTerminal();
 
-            TerminalKeyEvent event = terminalKeyParser.parseTerminalKeyInput(this, this.getChar());
-            handleInput(event);
+            TerminalKeyEvent event = terminalKeyParser.parseTerminalKeyInput(ioTerminalHandler.getChar());
+            handleInput(this, event);
         }
 
         System.out.write(renderingBuffer.clear().scrollScreenUp().setCursorVisible(true).getBuffer());
     }
 
-    public void handleInput(TerminalKeyEvent event) throws IOException {
-        currentDialog.handleInput(event, this);
+    public void handleInput(TerminalHandler terminalHandler, TerminalKeyEvent event) throws IOException {
+        currentDialog.handleInput(terminalHandler, event);
     }
 
     public void updateTerminal() throws IOException {
@@ -83,7 +99,7 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
     }
 
     private void addEmptyPage(TerminalRenderingBuffer renderingBuffer) {
-        Dimension terminalSize = this.getSize();
+        Dimension terminalSize = ioTerminalHandler.getSize();
         for (int row = 0; row < terminalSize.height; row++) {
             for (int col = 0; col < terminalSize.width; col++) {
                 renderingBuffer.addString(" ");
@@ -93,7 +109,17 @@ public abstract class BaseTerminalHandler implements TerminalHandler {
         }
     }
 
+    public Dimension getSize() {
+        return ioTerminalHandler.getSize();
+    }
+
     public void quit() {
         running = false;
+
+        try {
+            this.ioTerminalHandler.deinit();
+        } catch (TerminalHandlerException _) {
+            // ignore closing errors
+        }
     }
 }

@@ -1,15 +1,14 @@
-package de.dhbw.ka.tinf22b5.terminal.handler.lin;
+package de.dhbw.ka.tinf22b5.terminal.iohandler.lin;
 
-import de.dhbw.ka.tinf22b5.dialog.Dialog;
-import de.dhbw.ka.tinf22b5.terminal.handler.BaseTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.exception.TerminalHandlerException;
+import de.dhbw.ka.tinf22b5.terminal.iohandler.IOTerminalHandler;
 
 import java.awt.*;
 import java.io.IOException;
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
 
-public class LinuxTerminalHandler extends BaseTerminalHandler {
+public class LinuxTerminalHandler implements IOTerminalHandler {
 
     /* ---------------------
      * TERMIOS constants
@@ -60,10 +59,6 @@ public class LinuxTerminalHandler extends BaseTerminalHandler {
     private int origLFlag;
 
     private MethodHandle hdlIoctl;
-
-    public LinuxTerminalHandler(Dialog currentDialog) throws IOException {
-        super(currentDialog);
-    }
 
     @Override
     public void init() throws TerminalHandlerException {

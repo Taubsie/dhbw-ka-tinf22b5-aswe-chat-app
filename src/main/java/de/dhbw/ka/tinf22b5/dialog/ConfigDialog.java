@@ -34,7 +34,7 @@ public class ConfigDialog extends Dialog {
     }
 
     @Override
-    public void handleInput(TerminalKeyEvent event, TerminalHandler terminal) throws IOException {
+    public void handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
         switch (event.getTerminalKey()) {
             case TerminalKey.TK_UP, TerminalKey.TK_W, TerminalKey.TK_w -> {
                 terminal.moveCursor(CursorDirection.UP);
@@ -64,7 +64,7 @@ public class ConfigDialog extends Dialog {
                 }
             }
             case TerminalKey.TK_r, TerminalKey.TK_R -> repository.loadConfiguration();
-            default -> super.handleInput(event, terminal);
+            default -> super.handleInput(terminal, event);
         }
     }
 }

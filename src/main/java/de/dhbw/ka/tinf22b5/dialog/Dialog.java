@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public abstract class Dialog implements TerminalKeyListener, TerminalRenderable {
 
-    public void handleInput(TerminalKeyEvent event, TerminalHandler terminal) throws IOException {
+    public void handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
         switch (event.getTerminalKey()) {
             case TerminalKey.TK_UP, TerminalKey.TK_W, TerminalKey.TK_w -> terminal.moveCursor(CursorDirection.UP);
             case TerminalKey.TK_DOWN, TerminalKey.TK_S, TerminalKey.TK_s -> terminal.moveCursor(CursorDirection.DOWN);
@@ -22,7 +22,7 @@ public abstract class Dialog implements TerminalKeyListener, TerminalRenderable 
     }
 
     @Override
-    public final void keyPressed(TerminalKeyEvent terminalKeyEvent) throws IOException {
-        handleInput(terminalKeyEvent, terminalKeyEvent.getTerminalHandler());
+    public final void keyPressed(TerminalHandler terminal, TerminalKeyEvent terminalKeyEvent) throws IOException {
+        handleInput(terminal, terminalKeyEvent);
     }
 }
