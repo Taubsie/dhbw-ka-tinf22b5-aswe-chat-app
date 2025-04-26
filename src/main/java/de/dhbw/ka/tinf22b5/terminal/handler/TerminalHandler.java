@@ -1,6 +1,6 @@
 package de.dhbw.ka.tinf22b5.terminal.handler;
 
-import de.dhbw.ka.tinf22b5.dialog.Dialog;
+import de.dhbw.ka.tinf22b5.terminal.render.dialog.Dialog;
 import de.dhbw.ka.tinf22b5.terminal.CursorDirection;
 
 import java.io.IOException;

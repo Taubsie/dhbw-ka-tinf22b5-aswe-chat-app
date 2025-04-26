@@ -1,4 +1,4 @@
-package de.dhbw.ka.tinf22b5.dialog;
+package de.dhbw.ka.tinf22b5.terminal.render.dialog;
 
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
@@ -8,6 +8,8 @@ import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
+import de.dhbw.ka.tinf22b5.terminal.render.TerminalScreen;
+import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacterFactory;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -20,16 +22,19 @@ public class ConfigDialog extends Dialog {
     }
 
     @Override
-    public void render(TerminalRenderingBuffer terminalRenderingBuffer) {
-        terminalRenderingBuffer.setCursorVisible(true);
-        terminalRenderingBuffer.addString("Configuration");
-        terminalRenderingBuffer.nextLine();
+    public void render(TerminalScreen terminalScreen) {
+
+        terminalScreen.setCursorPosition(0, 0);
+        terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString("Configuration"));
+
+        terminalScreen.setCursorPosition(0, 1);
+        int line = 1;
         for (ConfigurationKey configurationKey : ConfigurationKey.values()) {
-            terminalRenderingBuffer.addString("- " + configurationKey.getDisplayName() + " -");
-            terminalRenderingBuffer.nextLine();
+            terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString("- " + configurationKey.getDisplayName() + " -"));
+            terminalScreen.setCursorPosition(0, ++line);
             Optional<String> value = repository.getConfigurationValue(configurationKey);
-            terminalRenderingBuffer.addString(value.orElse("No value set"));
-            terminalRenderingBuffer.nextLine();
+            terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString(value.orElse("No value set")));
+            terminalScreen.setCursorPosition(0, ++line);
         }
     }
 

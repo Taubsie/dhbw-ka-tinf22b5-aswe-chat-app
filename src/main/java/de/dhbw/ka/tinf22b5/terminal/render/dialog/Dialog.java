@@ -1,4 +1,4 @@
-package de.dhbw.ka.tinf22b5.dialog;
+package de.dhbw.ka.tinf22b5.terminal.render.dialog;
 
 import de.dhbw.ka.tinf22b5.terminal.*;
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
@@ -9,7 +9,7 @@ import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderable;
 
 import java.io.IOException;
 
-public abstract class Dialog implements TerminalKeyListener, TerminalRenderable {
+public abstract class Dialog extends TerminalRenderable implements TerminalKeyListener {
 
     public void handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
         switch (event.getTerminalKey()) {

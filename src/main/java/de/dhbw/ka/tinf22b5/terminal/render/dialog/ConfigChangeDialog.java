@@ -1,4 +1,4 @@
-package de.dhbw.ka.tinf22b5.dialog;
+package de.dhbw.ka.tinf22b5.terminal.render.dialog;
 
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
@@ -9,6 +9,8 @@ import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyType;
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
+import de.dhbw.ka.tinf22b5.terminal.render.TerminalScreen;
+import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacterFactory;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -24,22 +26,23 @@ public class ConfigChangeDialog extends Dialog {
     }
 
     @Override
-    public void render(TerminalRenderingBuffer terminalRenderingBuffer) {
-        terminalRenderingBuffer.setCursorVisible(true);
-        terminalRenderingBuffer.addString(newValue);
-        terminalRenderingBuffer.nextLine();
-        terminalRenderingBuffer.nextLine();
-        terminalRenderingBuffer.addString("Changing: " + configOption.getDisplayName());
-        terminalRenderingBuffer.nextLine();
+    public void render(TerminalScreen terminalScreen) {
+        terminalScreen.setCursorPosition(0, 0);
+        terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString(newValue));
+
+        terminalScreen.setCursorPosition(0, 2);
+        terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString("Changing: " + configOption.getDisplayName()));
+
+        terminalScreen.setCursorPosition(0, 3);
         Optional<String> value = repository.getConfigurationValue(configOption);
         if(value.isPresent()) {
-            terminalRenderingBuffer.addString("Old value: " + value.get());
+            terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString("Old value: " + value.get()));
         } else {
-            terminalRenderingBuffer.addString("No value set");
+            terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString("No value set"));
         }
-        terminalRenderingBuffer.nextLine();
-        terminalRenderingBuffer.addString("Enter - Save value | Esc / STRG+Q - Discard changes");
-        terminalRenderingBuffer.nextLine();
+
+        terminalScreen.setCursorPosition(0, 4);
+        terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString("Enter - Save value | Esc / STRG+Q - Discard changes"));
     }
 
     @Override

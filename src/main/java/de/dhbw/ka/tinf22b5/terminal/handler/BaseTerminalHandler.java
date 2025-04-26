@@ -1,6 +1,9 @@
 package de.dhbw.ka.tinf22b5.terminal.handler;
 
-import de.dhbw.ka.tinf22b5.dialog.Dialog;
+import de.dhbw.ka.tinf22b5.terminal.iohandler.IOTerminalFactory;
+import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalScreen;
+import de.dhbw.ka.tinf22b5.terminal.render.TerminalScreen;
+import de.dhbw.ka.tinf22b5.terminal.render.dialog.Dialog;
 import de.dhbw.ka.tinf22b5.terminal.exception.TerminalHandlerException;
 import de.dhbw.ka.tinf22b5.terminal.iohandler.IOTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
@@ -22,12 +25,14 @@ public class BaseTerminalHandler implements TerminalHandler {
 
     private final IOTerminalHandler ioTerminalHandler;
     private final TerminalRenderingBuffer renderingBuffer;
+    private final TerminalScreen terminalScreen;
 
     public BaseTerminalHandler(Dialog currentDialog) throws TerminalHandlerException {
         this.currentDialog = currentDialog;
 
-        this.ioTerminalHandler = IOTerminalHandler.getTerminalHandler();
+        this.ioTerminalHandler = IOTerminalFactory.createTerminalHandler();
         this.renderingBuffer = new BaseTerminalRenderingBuffer();
+        this.terminalScreen = new BaseTerminalScreen();
     }
 
     @Override
@@ -73,7 +78,7 @@ public class BaseTerminalHandler implements TerminalHandler {
         this.ioTerminalHandler.init();
 
         // TODO: make cleaner
-        System.out.write(renderingBuffer.clear().alternateScreenEnable().getBuffer());
+        System.out.write(renderingBuffer.clear().alternateScreenEnable().setCursorVisible(false).getBuffer());
 
         TerminalKeyParser terminalKeyParser = new TerminalKeyParser();
 
@@ -97,10 +102,14 @@ public class BaseTerminalHandler implements TerminalHandler {
     }
 
     public void updateTerminal() throws IOException {
+        terminalScreen.clear();
+        terminalScreen.doResize(this.ioTerminalHandler.getSize());
+        currentDialog.render(terminalScreen);
+
         renderingBuffer.clear();
         renderingBuffer.resetGraphicsModes();
         renderingBuffer.scrollScreenUp();
-        currentDialog.render(renderingBuffer);
+        terminalScreen.renderIntoBuffer(renderingBuffer);
         renderingBuffer.moveCursor(cursorX, cursorY);
         System.out.write(renderingBuffer.getBuffer());
     }
