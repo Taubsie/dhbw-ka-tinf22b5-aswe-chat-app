@@ -12,10 +12,6 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
         screenBuffer = new ArrayList<>();
     }
 
-    public void moveCursorToHome() {
-        addBytes(0x1b, '[', 'H');
-    }
-
     @Override
     public TerminalRenderingBuffer alternateScreenEnable() {
         addBytes(0x1b, '[', '?', '1', '0', '4', '9', 'h', 0x1b, '[', '2', '2', ';', '0', ';', '0', 't');
@@ -29,16 +25,8 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
     }
 
     @Override
-    public TerminalRenderingBuffer clearScreen() {
-        addBytes(0x1b, '[', 'm');
-        moveCursorToHome();
-        return this;
-    }
-
-    @Override
-    public TerminalRenderingBuffer scrollScreenUp() {
-        addBytes(0x1b, '[', '2', 'J');
-        moveCursorToHome();
+    public TerminalRenderingBuffer moveCursorToHome() {
+        addBytes(0x1b, '[', 'H');
         return this;
     }
 
@@ -50,8 +38,21 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
     }
 
     @Override
+    public TerminalRenderingBuffer scrollScreenUp() {
+        addBytes(0x1b, '[', '2', 'J');
+        moveCursorToHome();
+        return this;
+    }
+
+    @Override
     public TerminalRenderingBuffer setCursorVisible(boolean visible) {
         addBytes(0x1b, '[', '?', '2', '5', visible ? 'h' : 'l');
+        return this;
+    }
+
+    @Override
+    public TerminalRenderingBuffer resetGraphicsModes() {
+        addBytes(0x1b, '[', 'm');
         return this;
     }
 

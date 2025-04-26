@@ -5,11 +5,13 @@ public interface TerminalRenderingBuffer {
     TerminalRenderingBuffer alternateScreenEnable();
     TerminalRenderingBuffer alternateScreenDisable();
 
-    TerminalRenderingBuffer clearScreen();
     TerminalRenderingBuffer scrollScreenUp();
+
+    TerminalRenderingBuffer moveCursorToHome();
     TerminalRenderingBuffer moveCursor(int x, int y);
 
     TerminalRenderingBuffer setCursorVisible(boolean visible);
+    TerminalRenderingBuffer resetGraphicsModes();
 
     TerminalRenderingBuffer addBytes(byte... bytes);
     TerminalRenderingBuffer addBytes(int... bytes);

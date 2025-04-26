@@ -85,7 +85,11 @@ public class BaseTerminalHandler implements TerminalHandler {
         }
 
         // TODO: make cleaner
-        System.out.write(renderingBuffer.clear().alternateScreenDisable().getBuffer());
+        renderingBuffer.clear();
+        renderingBuffer.alternateScreenDisable();
+        renderingBuffer.setCursorVisible(true);
+        renderingBuffer.resetGraphicsModes();
+        System.out.write(renderingBuffer.getBuffer());
     }
 
     public void handleInput(TerminalHandler terminalHandler, TerminalKeyEvent event) throws IOException {
@@ -94,7 +98,7 @@ public class BaseTerminalHandler implements TerminalHandler {
 
     public void updateTerminal() throws IOException {
         renderingBuffer.clear();
-        renderingBuffer.clearScreen();
+        renderingBuffer.resetGraphicsModes();
         renderingBuffer.scrollScreenUp();
         currentDialog.render(renderingBuffer);
         renderingBuffer.moveCursor(cursorX, cursorY);
