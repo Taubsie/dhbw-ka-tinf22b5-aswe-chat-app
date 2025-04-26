@@ -3,6 +3,7 @@ package de.dhbw.ka.tinf22b5.terminal.render;
 import de.dhbw.ka.tinf22b5.terminal.CursorDirection;
 import de.dhbw.ka.tinf22b5.terminal.render.characters.PlainTerminalCharacter;
 import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacter;
+import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacterFactory;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -69,6 +70,12 @@ public class BaseTerminalScreen implements TerminalScreen {
             setCharacter(character);
         }
 
+        return this;
+    }
+
+    @Override
+    public TerminalScreen addString(String s) {
+        setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString(s));
         return this;
     }
 

@@ -5,11 +5,11 @@ import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyListener;
-import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderable;
+import de.dhbw.ka.tinf22b5.terminal.render.components.ContainerRenderable;
 
 import java.io.IOException;
 
-public abstract class Dialog extends TerminalRenderable implements TerminalKeyListener {
+public abstract class Dialog extends ContainerRenderable implements TerminalKeyListener {
 
     public void handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
         switch (event.getTerminalKey()) {

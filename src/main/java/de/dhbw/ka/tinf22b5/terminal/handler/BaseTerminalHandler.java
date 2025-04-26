@@ -12,7 +12,7 @@ import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalRenderingBuffer;
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.IOException;
 
 public class BaseTerminalHandler implements TerminalHandler {
@@ -102,8 +102,14 @@ public class BaseTerminalHandler implements TerminalHandler {
     }
 
     public void updateTerminal() throws IOException {
+        Dimension terminalSize = this.ioTerminalHandler.getSize();
+
         terminalScreen.clear();
-        terminalScreen.doResize(this.ioTerminalHandler.getSize());
+        terminalScreen.doResize(terminalSize);
+
+        currentDialog.setStartPoint(new Point(0, 0));
+        currentDialog.setSize(terminalSize);
+        currentDialog.layout();
         currentDialog.render(terminalScreen);
 
         renderingBuffer.clear();

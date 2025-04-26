@@ -14,6 +14,7 @@ public interface TerminalScreen {
 
     TerminalScreen setCharacter(TerminalCharacter character);
     TerminalScreen setCharacters(TerminalCharacter[] characters);
+    TerminalScreen addString(String s);
 
     void clear();
     void renderIntoBuffer(TerminalRenderingBuffer buffer);

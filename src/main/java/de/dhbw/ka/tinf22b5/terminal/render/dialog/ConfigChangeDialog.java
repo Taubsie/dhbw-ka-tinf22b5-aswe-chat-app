@@ -8,10 +8,10 @@ import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyType;
-import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalScreen;
 import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacterFactory;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -73,5 +73,15 @@ public class ConfigChangeDialog extends Dialog {
             case TerminalKey.TK_ESCAPE:
                 terminal.changeDialog(new ConfigDialog());
         }
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(0, 0);
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(0, 0);
     }
 }
