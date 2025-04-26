@@ -1,6 +1,5 @@
 package de.dhbw.ka.tinf22b5.terminal.render.components;
 
-import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyType;
@@ -24,7 +23,7 @@ public class TextInputRenderable extends TerminalRenderable {
         return text.toString();
     }
 
-    public void handleInput(TerminalHandler terminal, TerminalKeyEvent event) {
+    public void handleInput(TerminalKeyEvent event) {
         switch (event.getKeyType()) {
             case TerminalKeyType.TKT_SPECIAL_KEY:
                 switch (event.getTerminalKey()) {

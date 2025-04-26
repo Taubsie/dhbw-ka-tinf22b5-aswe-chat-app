@@ -57,7 +57,7 @@ public class ConfigChangeDialog extends Dialog {
                     return;
             }
 
-            textInput.handleInput(terminal, event);
+            textInput.handleInput(event);
     }
 
     @Override
