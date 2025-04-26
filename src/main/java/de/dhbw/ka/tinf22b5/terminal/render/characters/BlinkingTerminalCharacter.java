@@ -4,7 +4,7 @@ import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 
 public class BlinkingTerminalCharacter implements TerminalCharacter {
 
-    private TerminalCharacter decoratee;
+    private final TerminalCharacter decoratee;
 
     public BlinkingTerminalCharacter(TerminalCharacter decoratee) {
         this.decoratee = decoratee;

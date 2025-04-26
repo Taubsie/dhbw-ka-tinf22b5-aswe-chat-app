@@ -14,7 +14,7 @@ import java.awt.*;
 
 public class TextInputRenderable extends TerminalRenderable {
 
-    private StringBuilder text;
+    private final StringBuilder text;
 
     public TextInputRenderable(String text) {
         this.text = new StringBuilder(text);

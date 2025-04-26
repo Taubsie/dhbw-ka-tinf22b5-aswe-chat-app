@@ -15,12 +15,12 @@ public class BorderRenderable extends TerminalRenderable {
     public static final int BORDER_LEFT = 4;
     public static final int BORDER_RIGHT = 8;
 
-    private TerminalRenderable renderable;
+    private final TerminalRenderable renderable;
 
     private BorderStyle borderStyle;
 
-    private int borderModifier;
-    private int borderSize;
+    private final int borderModifier;
+    private final int borderSize;
 
     public BorderRenderable(TerminalRenderable renderable, BorderStyle borderStyle, int borderSize, int borderModifier) {
         this.renderable = renderable;
