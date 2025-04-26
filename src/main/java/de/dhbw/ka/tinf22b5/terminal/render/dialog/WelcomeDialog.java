@@ -23,11 +23,14 @@ public class WelcomeDialog extends Dialog {
     }
 
     @Override
-    public void handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
+    public boolean handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
         switch (event.getTerminalKey()) {
-            case TerminalKey.TK_C, TerminalKey.TK_c -> terminal.changeDialog(new ConfigDialog());
-            default -> super.handleInput(terminal, event);
+            case TerminalKey.TK_C, TerminalKey.TK_c:
+                terminal.changeDialog(new ConfigDialog());
+                return true;
         }
+
+        return false;
     }
 
     @Override

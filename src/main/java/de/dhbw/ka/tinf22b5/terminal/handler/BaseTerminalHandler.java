@@ -1,6 +1,7 @@
 package de.dhbw.ka.tinf22b5.terminal.handler;
 
 import de.dhbw.ka.tinf22b5.terminal.iohandler.IOTerminalFactory;
+import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalScreen;
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalScreen;
 import de.dhbw.ka.tinf22b5.terminal.render.dialog.Dialog;
@@ -98,7 +99,15 @@ public class BaseTerminalHandler implements TerminalHandler {
     }
 
     public void handleInput(TerminalHandler terminalHandler, TerminalKeyEvent event) throws IOException {
-        currentDialog.handleInput(terminalHandler, event);
+        if (currentDialog.handleInput(terminalHandler, event))
+            return;
+
+        switch (event.getTerminalKey()) {
+            case TerminalKey.TK_Q:
+            case TerminalKey.TK_q:
+            case TerminalKey.TK_CTRL_C:
+                this.quit();
+        }
     }
 
     public void updateTerminal() throws IOException {

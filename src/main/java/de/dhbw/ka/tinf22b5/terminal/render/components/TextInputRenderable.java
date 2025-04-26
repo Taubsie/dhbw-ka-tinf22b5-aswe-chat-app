@@ -23,24 +23,27 @@ public class TextInputRenderable extends TerminalRenderable {
         return text.toString();
     }
 
-    public void handleInput(TerminalKeyEvent event) {
+    public boolean handleInput(TerminalKeyEvent event) {
         switch (event.getKeyType()) {
             case TerminalKeyType.TKT_SPECIAL_KEY:
                 switch (event.getTerminalKey()) {
                     case TerminalKey.TK_BACKSPACE:
                         if (!text.isEmpty())
                             text.deleteCharAt(text.length() - 1);
-                        break;
+                        return true;
                     case TerminalKey.TK_CTRL_BACKSPACE:
                         text.setLength(0);
-                        break;
+                        return true;
                 }
                 break;
             case TKT_ASCII:
             case TKT_UNICODE:
             case TKT_UNICODE_STRING:
                 text.append(event.getKeyCharacter());
+                return true;
         }
+
+        return false;
     }
 
     @Override

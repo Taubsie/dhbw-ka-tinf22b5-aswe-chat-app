@@ -43,7 +43,7 @@ public class ConfigChangeDialog extends Dialog {
     }
 
     @Override
-    public void handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
+    public boolean handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
             switch (event.getTerminalKey()) {
                 case TerminalKey.TK_ENTER:
                     if (!textInput.getText().isBlank()) {
@@ -54,10 +54,10 @@ public class ConfigChangeDialog extends Dialog {
                 case TerminalKey.TK_CTRL_Q:
                 case TerminalKey.TK_ESCAPE:
                     terminal.changeDialog(new ConfigDialog());
-                    return;
+                    return true;
             }
 
-            textInput.handleInput(event);
+            return textInput.handleInput(event);
     }
 
     @Override
