@@ -120,10 +120,6 @@ public class BaseTerminalHandler implements TerminalHandler {
         System.out.write(renderingBuffer.getBuffer());
     }
 
-    public Dimension getSize() {
-        return ioTerminalHandler.getSize();
-    }
-
     public void quit() {
         running = false;
 
