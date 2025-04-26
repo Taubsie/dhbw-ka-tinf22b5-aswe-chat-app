@@ -26,12 +26,4 @@ public interface IOTerminalHandler {
             }
         }));
     }
-
-    static IOTerminalHandler getTerminalHandler() throws TerminalHandlerException {
-        return switch (OSUtil.getOS()) {
-            case WIN -> new WindowsTerminalHandler();
-            case LINUX -> new LinuxTerminalHandler();
-            default -> throw new TerminalHandlerException("Unsupported OS: " + OSUtil.getOS());
-        };
-    }
 }
