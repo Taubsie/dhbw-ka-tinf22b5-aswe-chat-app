@@ -27,6 +27,9 @@ public class ListLayout implements LayoutManager {
         int minimumHeight = 0;
 
         for (TerminalRenderable child : children) {
+            if (child.getPreferredSize().width == -1)
+                preferedWidth = size.width;
+
             preferedWidth = Math.max(preferedWidth, child.getPreferredSize().width);
             preferedHeight += child.getPreferredSize().height;
 
@@ -41,7 +44,12 @@ public class ListLayout implements LayoutManager {
             int y = startPoint.y;
             for (TerminalRenderable child : children) {
                 child.setVisible(true);
-                child.setSize(child.getPreferredSize());
+
+                Dimension childrenPrefSize = child.getPreferredSize();
+                if(childrenPrefSize.width < 0)
+                    childrenPrefSize.width = width;
+
+                child.setSize(childrenPrefSize);
                 child.setStartPoint(new Point(startPoint.x, y));
                 y += child.getPreferredSize().height;
             }
@@ -49,7 +57,12 @@ public class ListLayout implements LayoutManager {
             int y = startPoint.y;
             for (TerminalRenderable child : children) {
                 child.setVisible(true);
-                child.setSize(child.getMinimumSize());
+
+                Dimension childrenMinSize = child.getMinimumSize();
+                if(childrenMinSize.width < 0)
+                    childrenMinSize.width = width;
+
+                child.setSize(childrenMinSize);
                 child.setStartPoint(new Point(startPoint.x, y));
                 y += child.getMinimumSize().height;
             }
@@ -67,6 +80,23 @@ public class ListLayout implements LayoutManager {
                         child.setVisible(true);
                         child.setSize(new Dimension(width, childSize.height));
                         child.setStartPoint(new Point(startPoint.x, startPoint.y + remainingHeight - 1));
+                        remainingHeight -= childSize.height;
+                    }
+                }
+            } else {
+                int remainingHeight = size.height;
+                int y = startPoint.y;
+                for (int i = 0; i < children.length; i++) {
+                    TerminalRenderable child = children[i];
+
+                    Dimension childSize = child.getMinimumSize();
+
+                    if (childSize.height > remainingHeight) {
+                        child.setVisible(false);
+                    } else {
+                        child.setVisible(true);
+                        child.setSize(new Dimension(width, childSize.height));
+                        child.setStartPoint(new Point(startPoint.x, y++));
                         remainingHeight -= childSize.height;
                     }
                 }

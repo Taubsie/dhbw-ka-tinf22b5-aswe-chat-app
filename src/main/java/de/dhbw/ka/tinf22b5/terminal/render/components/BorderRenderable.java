@@ -73,7 +73,8 @@ public class BorderRenderable extends TerminalRenderable {
         Dimension preferedSize = renderable.getPreferredSize();
         Dimension borderSize = this.getBorderSize();
 
-        preferedSize.width += borderSize.width;
+        if (preferedSize.width >= 0)
+            preferedSize.width += borderSize.width;
         preferedSize.height += borderSize.height;
 
         return preferedSize;
