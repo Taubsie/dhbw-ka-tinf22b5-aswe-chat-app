@@ -1,21 +1,29 @@
 package de.dhbw.ka.tinf22b5.terminal.render;
 
 import de.dhbw.ka.tinf22b5.terminal.CursorDirection;
+import de.dhbw.ka.tinf22b5.terminal.render.characters.DecoratedCharacterFactory;
 import de.dhbw.ka.tinf22b5.terminal.render.characters.PlainTerminalCharacter;
 import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacter;
 import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacterFactory;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class BaseTerminalScreen implements TerminalScreen {
 
     private int width;
     private int height;
     private TerminalCharacter[] characters;
+    private final Queue<DecoratedCharacterFactory> characterModifiers;
 
     private int cursorX;
     private int cursorY;
+
+    public BaseTerminalScreen() {
+        characterModifiers = new LinkedList<>();
+    }
 
     @Override
     public void doResize(Dimension dimension) {
@@ -57,6 +65,10 @@ public class BaseTerminalScreen implements TerminalScreen {
         if (cursorX < 0 || cursorX >= width || cursorY < 0 || cursorY >= height)
             return this;
 
+        for (DecoratedCharacterFactory factory : characterModifiers) {
+            character = DecoratedCharacterFactory.createWrappedTerminalCharacter(character, factory);
+        }
+
         characters[cursorY * this.width + cursorX] = character;
         // dont test, its done above and prevents overwriting of the same char
         cursorX++;
@@ -80,12 +92,26 @@ public class BaseTerminalScreen implements TerminalScreen {
     }
 
     @Override
+    public TerminalScreen pushCharacterModifier(DecoratedCharacterFactory fac) {
+        characterModifiers.add(fac);
+        return this;
+    }
+
+    @Override
+    public TerminalScreen popCharacterModifier() {
+        characterModifiers.remove();
+        return this;
+    }
+
+    @Override
     public void clear() {
         this.characters = new TerminalCharacter[this.width * this.height];
         Arrays.fill(this.characters, new PlainTerminalCharacter(" "));
 
         this.cursorX = 0;
         this.cursorY = 0;
+
+        characterModifiers.clear();
     }
 
     @Override
