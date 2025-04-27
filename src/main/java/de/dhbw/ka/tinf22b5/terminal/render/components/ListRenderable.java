@@ -14,7 +14,9 @@ public class ListRenderable<T extends TerminalRenderable> extends TerminalRender
 
     private final List<T> items;
     private boolean holdFocus = false;
+
     private Dimension virtualScreenSize;
+    private int scrollOffset = 0;
 
     private int selectedIdx = 0;
 
@@ -26,15 +28,9 @@ public class ListRenderable<T extends TerminalRenderable> extends TerminalRender
         items.add(item);
     }
 
-    public void removeItem(T item) {
-        items.remove(item);
-    }
-
-    public void removeItem(int idx) {
-        items.remove(idx);
-    }
-
     public void clearItems() {
+        selectedIdx = 0;
+        scrollOffset = 0;
         items.clear();
     }
 
@@ -48,11 +44,11 @@ public class ListRenderable<T extends TerminalRenderable> extends TerminalRender
 
         switch (event.getTerminalKey()) {
             case TerminalKey.TK_UP, TerminalKey.TK_W, TerminalKey.TK_w -> {
-                selectedIdx--;
+                selectedIdx = Math.max(0, selectedIdx - 1);
                 return true;
             }
             case TerminalKey.TK_DOWN, TerminalKey.TK_S, TerminalKey.TK_s -> {
-                selectedIdx++;
+                selectedIdx = Math.min(selectedIdx + 1, items.size() - 1);
                 return true;
             }
         }
@@ -95,9 +91,36 @@ public class ListRenderable<T extends TerminalRenderable> extends TerminalRender
 
     @Override
     public void render(TerminalScreen terminalScreen) {
-        if (!isVisible())
+        if (!isVisible() || items.isEmpty())
             return;
 
+        BaseTerminalScreen virtualScreen = renderIntoVirtualScreen();
+
+        if(selectedIdx >= items.size())
+            selectedIdx = items.size() - 1;
+
+        checkForValidScrollOffset();
+
+        for (int line = 0; line < size.height; line++) {
+            terminalScreen.setCursorPosition(startPoint.x, startPoint.y + line);
+            terminalScreen.setCharacters(virtualScreen.getLine(line + scrollOffset));
+        }
+    }
+
+    private void checkForValidScrollOffset() {
+        // check if selected item fits in current frame
+        TerminalRenderable selectedItem = items.get(selectedIdx);
+        // selected is above
+        if (selectedItem.startPoint.y < scrollOffset) {
+            scrollOffset = selectedItem.startPoint.y;
+        } else if (selectedItem.startPoint.y >= scrollOffset + this.size.height) {
+            scrollOffset = selectedItem.startPoint.y;
+        } else if (selectedItem.startPoint.y != scrollOffset && selectedItem.startPoint.y + selectedItem.size.height > scrollOffset + this.size.height) {
+            scrollOffset = selectedItem.startPoint.y;
+        }
+    }
+
+    private BaseTerminalScreen renderIntoVirtualScreen() {
         BaseTerminalScreen virtualScreen = new BaseTerminalScreen();
         virtualScreen.doResize(virtualScreenSize);
 
@@ -117,10 +140,7 @@ public class ListRenderable<T extends TerminalRenderable> extends TerminalRender
             }
         }
 
-        for (int line = 0; line < size.height; line++) {
-            terminalScreen.setCursorPosition(startPoint.x, startPoint.y + line);
-            terminalScreen.setCharacters(virtualScreen.getLine(line));
-        }
+        return virtualScreen;
     }
 
     @Override
