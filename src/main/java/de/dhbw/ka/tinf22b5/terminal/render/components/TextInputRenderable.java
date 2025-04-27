@@ -11,9 +11,10 @@ import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacter;
 
 import java.awt.*;
 
-public class TextInputRenderable extends TerminalRenderable {
+public class TextInputRenderable extends TerminalRenderable implements Focusable {
 
     private final StringBuilder text;
+    private boolean holdsFocus = false;
 
     public TextInputRenderable(String text) {
         this.text = new StringBuilder(text);
@@ -24,6 +25,9 @@ public class TextInputRenderable extends TerminalRenderable {
     }
 
     public boolean handleInput(TerminalKeyEvent event) {
+        if (!holdsFocus)
+            return false;
+
         switch (event.getKeyType()) {
             case TerminalKeyType.TKT_SPECIAL_KEY:
                 switch (event.getTerminalKey()) {
@@ -65,10 +69,12 @@ public class TextInputRenderable extends TerminalRenderable {
             }
         }
 
-        TerminalCharacter cursorIndicator = new PlainTerminalCharacter("_");
-        cursorIndicator = new ReversedTerminalCharacter(cursorIndicator);
-        cursorIndicator = new BlinkingTerminalCharacter(cursorIndicator);
-        terminalScreen.setCharacter(cursorIndicator);
+        if (holdsFocus) {
+            TerminalCharacter cursorIndicator = new PlainTerminalCharacter("_");
+            cursorIndicator = new ReversedTerminalCharacter(cursorIndicator);
+            cursorIndicator = new BlinkingTerminalCharacter(cursorIndicator);
+            terminalScreen.setCharacter(cursorIndicator);
+        }
     }
 
     @Override
@@ -82,4 +88,8 @@ public class TextInputRenderable extends TerminalRenderable {
         return new Dimension(-1, 1);
     }
 
+    @Override
+    public void setFocus(boolean focus) {
+        this.holdsFocus = focus;
+    }
 }

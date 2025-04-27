@@ -25,6 +25,7 @@ public class ConfigChangeDialog extends Dialog {
 
         this.layoutManager = new ListLayout(true);
         this.textInput = new TextInputRenderable("");
+        this.textInput.setFocus(true);
         this.addComponent(textInput);
 
         // empty line
