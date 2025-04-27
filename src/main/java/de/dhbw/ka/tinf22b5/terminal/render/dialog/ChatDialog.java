@@ -1,6 +1,7 @@
 package de.dhbw.ka.tinf22b5.terminal.render.dialog;
 
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
+import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.render.components.*;
 import de.dhbw.ka.tinf22b5.terminal.render.layout.ListLayout;
@@ -14,6 +15,8 @@ public class ChatDialog extends Dialog {
     private final ListRenderable<ConstSingleLineStringRenderable> chatList;
     private final TextInputRenderable textInput;
 
+    private Interactable currentlyFocused;
+
     public ChatDialog() {
         this.layoutManager = new VerticalSplitLayout(0.3f);
 
@@ -23,6 +26,7 @@ public class ChatDialog extends Dialog {
         this.chatList = new ListRenderable<>();
         this.textInput = new TextInputRenderable("");
         this.textInput.setFocus(true);
+        this.currentlyFocused = this.textInput;
 
         EmptyPanel panel = new EmptyPanel(new ListLayout(false));
         panel.addComponent(chatList);
@@ -39,7 +43,27 @@ public class ChatDialog extends Dialog {
 
     @Override
     public boolean handleInput(TerminalHandler terminal, TerminalKeyEvent event) {
+        if (currentlyFocused != null && currentlyFocused.handleInput(event))
+            return true;
+
+        switch (event.getTerminalKey()) {
+            case TerminalKey.TK_TAB:
+                doCyclicFocusSwitch();
+                return true;
+        }
+
         return false;
+    }
+
+    private void doCyclicFocusSwitch() {
+        currentlyFocused.setFocus(false);
+        if(currentlyFocused == userList)
+            currentlyFocused = chatList;
+        else if(currentlyFocused == chatList)
+            currentlyFocused = textInput;
+        else if(currentlyFocused == textInput)
+            currentlyFocused = userList;
+        currentlyFocused.setFocus(true);
     }
 
     @Override
