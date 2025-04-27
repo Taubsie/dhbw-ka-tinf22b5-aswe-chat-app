@@ -2,12 +2,10 @@ package de.dhbw.ka.tinf22b5.terminal.render.characters;
 
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 
-public class ReversedTerminalCharacter implements TerminalCharacter {
-
-    private final TerminalCharacter decoratee;
+public class ReversedTerminalCharacter extends DecoratedCharacter {
 
     public ReversedTerminalCharacter(TerminalCharacter decoratee) {
-        this.decoratee = decoratee;
+        super(decoratee);
     }
 
     @Override
