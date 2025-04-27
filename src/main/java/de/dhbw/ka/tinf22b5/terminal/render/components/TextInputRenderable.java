@@ -11,7 +11,7 @@ import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacter;
 
 import java.awt.*;
 
-public class TextInputRenderable extends TerminalRenderable implements Focusable {
+public class TextInputRenderable extends TerminalRenderable implements Interactable {
 
     private final StringBuilder text;
     private boolean holdsFocus = false;

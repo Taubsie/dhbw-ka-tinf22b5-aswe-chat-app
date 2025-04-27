@@ -10,7 +10,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListRenderable<T extends TerminalRenderable> extends TerminalRenderable implements Focusable {
+public class ListRenderable<T extends TerminalRenderable> extends TerminalRenderable implements Interactable {
 
     private final List<T> items;
     private boolean holdFocus = false;
