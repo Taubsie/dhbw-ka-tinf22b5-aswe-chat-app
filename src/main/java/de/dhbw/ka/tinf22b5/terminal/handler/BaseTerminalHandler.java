@@ -43,40 +43,8 @@ public class BaseTerminalHandler implements TerminalHandler {
     }
 
     @Override
-    public int getCursorX() {
-        return cursorX;
-    }
-
-    @Override
-    public int getCursorY() {
-        return cursorY;
-    }
-
-    @Override
-    public void setCursorX(int x) {
-        this.cursorX = x;
-    }
-
-    @Override
-    public void setCursorY(int y) {
-        this.cursorY = y;
-    }
-
-    @Override
-    public void updateCursor(int x, int y) {
-        x = Math.min(this.ioTerminalHandler.getSize().width, Math.max(1, x));
-        y = Math.min(this.ioTerminalHandler.getSize().height, Math.max(1, y));
-
-        setCursorX(x);
-        setCursorY(y);
-    }
-
-    @Override
     public void changeDialog(@NotNull Dialog dialog) throws IOException {
         currentDialog = dialog;
-
-        setCursorX(1);
-        setCursorY(1);
 
         updateTerminal();
     }

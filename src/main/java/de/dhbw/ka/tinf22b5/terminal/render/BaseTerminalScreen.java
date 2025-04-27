@@ -1,6 +1,5 @@
 package de.dhbw.ka.tinf22b5.terminal.render;
 
-import de.dhbw.ka.tinf22b5.terminal.CursorDirection;
 import de.dhbw.ka.tinf22b5.terminal.render.characters.DecoratedCharacterFactory;
 import de.dhbw.ka.tinf22b5.terminal.render.characters.PlainTerminalCharacter;
 import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacter;
@@ -40,24 +39,6 @@ public class BaseTerminalScreen implements TerminalScreen {
     public void setCursorPosition(int x, int y) {
         this.cursorX = x;
         this.cursorY = y;
-    }
-
-    @Override
-    public void moveCursor(CursorDirection direction, int amount) {
-        switch (direction) {
-            case UP:
-                this.cursorY -= amount;
-                break;
-            case DOWN:
-                this.cursorY += amount;
-                break;
-            case LEFT:
-                this.cursorX -= amount;
-                break;
-            case RIGHT:
-                this.cursorX += amount;
-                break;
-        }
     }
 
     @Override
