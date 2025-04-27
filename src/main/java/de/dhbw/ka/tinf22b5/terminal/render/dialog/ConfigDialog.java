@@ -3,12 +3,14 @@ package de.dhbw.ka.tinf22b5.terminal.render.dialog;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.FileConfigurationRepository;
-import de.dhbw.ka.tinf22b5.terminal.CursorDirection;
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
-import de.dhbw.ka.tinf22b5.terminal.render.TerminalScreen;
-import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacterFactory;
+import de.dhbw.ka.tinf22b5.terminal.render.components.BorderRenderable;
+import de.dhbw.ka.tinf22b5.terminal.render.components.ConstSingleLineStringRenderable;
+import de.dhbw.ka.tinf22b5.terminal.render.components.ContainerRenderable;
+import de.dhbw.ka.tinf22b5.terminal.render.components.ListRenderable;
+import de.dhbw.ka.tinf22b5.terminal.render.layout.ListLayout;
 
 import java.awt.*;
 import java.io.IOException;
@@ -17,60 +19,44 @@ import java.util.Optional;
 public class ConfigDialog extends Dialog {
     private final ConfigurationRepository repository;
 
+    private final ListRenderable<ConfigListItem> configList;
+
     public ConfigDialog() {
         repository = new FileConfigurationRepository();
-    }
 
-    @Override
-    public void render(TerminalScreen terminalScreen) {
+        this.layoutManager = new ListLayout(true);
 
-        terminalScreen.setCursorPosition(0, 0);
-        terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString("Configuration"));
+        this.addComponent(new BorderRenderable(new ConstSingleLineStringRenderable("Configuration"), BorderRenderable.BorderStyle.EMPTY, 1, BorderRenderable.BORDER_BOTTOM));
 
-        terminalScreen.setCursorPosition(0, 1);
-        int line = 1;
+        this.configList = new ListRenderable<>();
+        this.configList.setFocus(true);
+        this.addComponent(configList);
+
         for (ConfigurationKey configurationKey : ConfigurationKey.values()) {
-            terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString("- " + configurationKey.getDisplayName() + " -"));
-            terminalScreen.setCursorPosition(0, ++line);
             Optional<String> value = repository.getConfigurationValue(configurationKey);
-            terminalScreen.setCharacters(TerminalCharacterFactory.createTerminalCharactersFromString(value.orElse("No value set")));
-            terminalScreen.setCursorPosition(0, ++line);
+            this.configList.addItem(new ConfigListItem(configurationKey, value.orElse("No value set")));
         }
     }
 
     @Override
     public boolean handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
-        switch (event.getTerminalKey()) {
-            case TerminalKey.TK_UP, TerminalKey.TK_W, TerminalKey.TK_w -> {
-                terminal.moveCursor(CursorDirection.UP);
-                if (terminal.getCursorY() % 2 == 0) {
-                    terminal.moveCursor(CursorDirection.UP);
-                }
-            }
-            case TerminalKey.TK_DOWN, TerminalKey.TK_S, TerminalKey.TK_s -> {
-                terminal.moveCursor(CursorDirection.DOWN);
-                if (terminal.getCursorY() % 2 == 0) {
-                    terminal.moveCursor(CursorDirection.DOWN);
-                }
-            }
-            case TerminalKey.TK_RIGHT, TerminalKey.TK_D, TerminalKey.TK_d, TerminalKey.TK_LEFT, TerminalKey.TK_A,
-                 TerminalKey.TK_a -> {
-            }
-            case TerminalKey.TK_ENTER -> {
-                if (terminal.getCursorY() < 3) {
-                    break;
-                }
+        if (this.configList.handleInput(event))
+            return true;
 
-                // 3 -> 0; 5 -> 1; 7 -> 2; 9 -> 3
-                Optional<ConfigurationKey> config = ConfigurationKey.getByOrdinal(((terminal.getCursorY() - 1) / 2) - 1);
+        switch (event.getTerminalKey()) {
+            case TerminalKey.TK_ENTER:
+                Optional<ConfigurationKey> config = ConfigurationKey.getByOrdinal(this.configList.getSelectedIdx());
 
                 if (config.isPresent()) {
                     terminal.changeDialog(new ConfigChangeDialog(repository, config.get()));
                 }
-            }
-            case TerminalKey.TK_r, TerminalKey.TK_R -> repository.loadConfiguration();
+
+                return true;
+            case TerminalKey.TK_r, TerminalKey.TK_R:
+                repository.loadConfiguration();
+                return true;
         }
-    // TODO: needs to be changed
+
         return false;
     }
 
@@ -82,5 +68,30 @@ public class ConfigDialog extends Dialog {
     @Override
     public Dimension getMinimumSize() {
         return new Dimension(0, 0);
+    }
+
+    private static class ConfigListItem extends ContainerRenderable {
+
+        private final ConstSingleLineStringRenderable keyText;
+        private final ConstSingleLineStringRenderable valueText;
+
+        ConfigListItem(ConfigurationKey key, String value) {
+            this.layoutManager = new ListLayout(true);
+
+            this.keyText = new ConstSingleLineStringRenderable("-" + key.getDisplayName() + "-");
+            this.addComponent(this.keyText);
+            this.valueText = new ConstSingleLineStringRenderable(value);
+            this.addComponent(this.valueText);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return new Dimension(Math.max(this.keyText.getPreferredSize().width, this.valueText.getPreferredSize().width), 2);
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return new Dimension(Math.max(this.keyText.getMinimumSize().width, this.valueText.getMinimumSize().width), 2);
+        }
     }
 }

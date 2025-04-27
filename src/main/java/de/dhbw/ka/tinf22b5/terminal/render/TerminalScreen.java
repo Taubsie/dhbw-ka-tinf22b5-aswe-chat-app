@@ -21,5 +21,6 @@ public interface TerminalScreen {
     TerminalScreen popCharacterModifier();
 
     void clear();
+    TerminalCharacter[] getLine(int idx);
     void renderIntoBuffer(TerminalRenderingBuffer buffer);
 }

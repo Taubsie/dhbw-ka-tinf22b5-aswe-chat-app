@@ -26,9 +26,15 @@ public class ListLayout implements LayoutManager {
         int minimumWidth = 0;
         int minimumHeight = 0;
 
+        boolean preferedMaxWidth = false;
+        boolean preferedMaxHeight = false;
+
         for (TerminalRenderable child : children) {
             if (child.getPreferredSize().width == -1)
-                preferedWidth = size.width;
+                preferedMaxWidth = true;
+
+            if (child.getPreferredSize().height == -1)
+                preferedMaxHeight = true;
 
             preferedWidth = Math.max(preferedWidth, child.getPreferredSize().width);
             preferedHeight += child.getPreferredSize().height;
@@ -37,7 +43,10 @@ public class ListLayout implements LayoutManager {
             minimumHeight += child.getMinimumSize().height;
         }
 
-        int width = Math.min(size.width, preferedWidth);
+        int width = Math.min(size.width, preferedMaxWidth ? size.width : preferedWidth);
+
+        if (preferedMaxHeight)
+            preferedHeight = Math.max(preferedHeight, size.height);
 
         if (preferedWidth <= size.width && preferedHeight <= size.height) {
             // can layout as wanted
@@ -46,12 +55,14 @@ public class ListLayout implements LayoutManager {
                 child.setVisible(true);
 
                 Dimension childrenPrefSize = child.getPreferredSize();
-                if(childrenPrefSize.width < 0)
+                if (childrenPrefSize.width < 0)
                     childrenPrefSize.width = width;
+                if (childrenPrefSize.height < 0)
+                    childrenPrefSize.height = size.height - (y - startPoint.y);
 
                 child.setSize(childrenPrefSize);
                 child.setStartPoint(new Point(startPoint.x, y));
-                y += child.getPreferredSize().height;
+                y += childrenPrefSize.height;
             }
         } else if (minimumWidth <= size.width && minimumHeight <= size.height) {
             int y = startPoint.y;
@@ -59,12 +70,14 @@ public class ListLayout implements LayoutManager {
                 child.setVisible(true);
 
                 Dimension childrenMinSize = child.getMinimumSize();
-                if(childrenMinSize.width < 0)
+                if (childrenMinSize.width < 0)
                     childrenMinSize.width = width;
+                if (childrenMinSize.height < 0)
+                    childrenMinSize.height = size.height - (y - startPoint.y);
 
                 child.setSize(childrenMinSize);
                 child.setStartPoint(new Point(startPoint.x, y));
-                y += child.getMinimumSize().height;
+                y += childrenMinSize.height;
             }
         } else {
             if (!keepOnTop) {
@@ -73,9 +86,11 @@ public class ListLayout implements LayoutManager {
                     TerminalRenderable child = children[i];
 
                     Dimension childSize = child.getMinimumSize();
+                    if (childSize.height < 0)
+                        childSize.height = remainingHeight;
 
                     if (childSize.height > remainingHeight) {
-                       child.setVisible(false);
+                        child.setVisible(false);
                     } else {
                         child.setVisible(true);
                         child.setSize(new Dimension(width, childSize.height));
@@ -90,6 +105,8 @@ public class ListLayout implements LayoutManager {
                     TerminalRenderable child = children[i];
 
                     Dimension childSize = child.getMinimumSize();
+                    if (childSize.height < 0)
+                        childSize.height = remainingHeight;
 
                     if (childSize.height > remainingHeight) {
                         child.setVisible(false);

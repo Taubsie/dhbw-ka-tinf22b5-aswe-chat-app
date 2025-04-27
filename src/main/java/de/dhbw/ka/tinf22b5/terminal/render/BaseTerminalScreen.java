@@ -115,6 +115,14 @@ public class BaseTerminalScreen implements TerminalScreen {
     }
 
     @Override
+    public TerminalCharacter[] getLine(int idx) {
+        if(idx < 0 || idx >= this.height)
+            return new PlainTerminalCharacter[0];
+
+        return Arrays.copyOfRange(this.characters, idx * this.width, (idx + 1) * this.width);
+    }
+
+    @Override
     public void renderIntoBuffer(TerminalRenderingBuffer buffer) {
         for (int line = 0; line < this.height; line++) {
 
