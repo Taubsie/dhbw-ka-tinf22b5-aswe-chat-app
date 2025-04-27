@@ -55,6 +55,9 @@ public class ConfigDialog extends Dialog {
             case TerminalKey.TK_r, TerminalKey.TK_R:
                 repository.loadConfiguration();
                 return true;
+            case TerminalKey.TK_ESCAPE:
+                terminal.changeDialog(new WelcomeDialog());
+                return true;
         }
 
         return false;
