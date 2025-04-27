@@ -1,13 +1,16 @@
 package de.dhbw.ka.tinf22b5.terminal.render.components;
 
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalScreen;
+import de.dhbw.ka.tinf22b5.terminal.render.characters.PlainTerminalCharacter;
+import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacter;
 
 import java.awt.*;
+import java.util.Arrays;
 
 public class BorderRenderable extends TerminalRenderable {
 
     public enum BorderStyle {
-        EMPTY
+        EMPTY, DASHED
     }
 
     public static final int BORDER_TOP = 1;
@@ -35,15 +38,27 @@ public class BorderRenderable extends TerminalRenderable {
 
     @Override
     public void layout() {
-        if (getPreferredSize().width > size.width || getPreferredSize().height > size.height) {
+        Dimension prefSize = renderable.getPreferredSize();
+
+        if (prefSize.width < 0) {
+            prefSize.width = size.width;
+        }
+
+        if(prefSize.height < 0) {
+            prefSize.height = size.height;
+        }
+
+        if (prefSize.width > size.width || prefSize.height > size.height) {
             renderable.setSize(size);
             renderable.setStartPoint(startPoint);
         } else {
             Point renderableStartPoint = new Point(startPoint);
-            if ((borderModifier & BORDER_TOP) != 0)
+            if ((borderModifier & BORDER_TOP) != 0) {
                 renderableStartPoint.y += this.borderSize;
-            if ((borderModifier & BORDER_LEFT) != 0)
+            }
+            if ((borderModifier & BORDER_LEFT) != 0) {
                 renderableStartPoint.x += this.borderSize;
+            }
 
             renderable.setStartPoint(renderableStartPoint);
 
@@ -54,6 +69,8 @@ public class BorderRenderable extends TerminalRenderable {
             remainingSize.height -= borderSize.height;
             renderable.setSize(remainingSize);
         }
+
+        renderable.layout();
     }
 
     @Override
@@ -61,11 +78,65 @@ public class BorderRenderable extends TerminalRenderable {
         Dimension renderableMinSize = renderable.getMinimumSize();
 
         renderable.render(terminalScreen);
-
-        if (!renderableMinSize.equals(size)) {
-            // TODO: implement other border styles
+        if (size.height > renderableMinSize.height && size.width > renderableMinSize.width) {
+            switch (borderStyle) {
+                case EMPTY: // do nothing
+                    break;
+                case DASHED:
+                    createDashedBorder(terminalScreen);
+            }
         }
 
+    }
+
+    private void createDashedBorder(TerminalScreen terminalScreen) {
+        boolean topBorder = (borderModifier & BORDER_TOP) != 0;
+        boolean bottomBorder = (borderModifier & BORDER_BOTTOM) != 0;
+        boolean leftBorder = (borderModifier & BORDER_LEFT) != 0;
+        boolean rightBorder = (borderModifier & BORDER_RIGHT) != 0;
+
+        if (topBorder) {
+            terminalScreen.setCursorPosition(renderable.startPoint.x - (leftBorder ? 1 : 0), renderable.startPoint.y - 1);
+            createDashedHorizontalLine(terminalScreen, leftBorder, rightBorder);
+        }
+
+        if (bottomBorder) {
+            terminalScreen.setCursorPosition(renderable.startPoint.x - (leftBorder ? 1 : 0), renderable.startPoint.y + renderable.size.height);
+            createDashedHorizontalLine(terminalScreen, leftBorder, rightBorder);
+        }
+
+        if (leftBorder) {
+            for (int i = 0; i < renderable.size.height; i++) {
+                terminalScreen.setCursorPosition(renderable.startPoint.x - 1, renderable.startPoint.y + i);
+                terminalScreen.setCharacter(new PlainTerminalCharacter("|"));
+            }
+        }
+
+        if (rightBorder) {
+            for (int i = 0; i < renderable.size.height; i++) {
+                int xOffset = Math.min(renderable.size.width, renderable.getPreferredSize().width);
+                if (xOffset < 0) {
+                    xOffset = renderable.size.width;
+                }
+                terminalScreen.setCursorPosition(renderable.startPoint.x + xOffset, renderable.startPoint.y + i);
+                terminalScreen.setCharacter(new PlainTerminalCharacter("|"));
+            }
+        }
+    }
+
+    private void createDashedHorizontalLine(TerminalScreen terminalScreen, boolean leftBorder, boolean rightBorder) {
+        int renderableSize = Math.min(renderable.size.width, renderable.getPreferredSize().width);
+        if (renderableSize < 0)
+            renderableSize = renderable.size.width;
+        TerminalCharacter[] borderChars = new TerminalCharacter[renderableSize + (leftBorder ? 1 : 0) + (rightBorder ? 1 : 0)];
+        Arrays.fill(borderChars, new PlainTerminalCharacter("-"));
+
+        if (leftBorder)
+            borderChars[0] = new PlainTerminalCharacter("+");
+        if (rightBorder)
+            borderChars[borderChars.length - 1] = new PlainTerminalCharacter("+");
+
+        terminalScreen.setCharacters(borderChars);
     }
 
     @Override
@@ -75,7 +146,8 @@ public class BorderRenderable extends TerminalRenderable {
 
         if (preferedSize.width >= 0)
             preferedSize.width += borderSize.width;
-        preferedSize.height += borderSize.height;
+        if (preferedSize.height >= 0)
+            preferedSize.height += borderSize.height;
 
         return preferedSize;
     }

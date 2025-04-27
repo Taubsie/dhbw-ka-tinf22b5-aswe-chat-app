@@ -6,7 +6,6 @@ import de.dhbw.ka.tinf22b5.configuration.FileConfigurationRepository;
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
-import de.dhbw.ka.tinf22b5.terminal.render.components.BorderRenderable;
 import de.dhbw.ka.tinf22b5.terminal.render.components.ConstSingleLineStringRenderable;
 import de.dhbw.ka.tinf22b5.terminal.render.components.ContainerRenderable;
 import de.dhbw.ka.tinf22b5.terminal.render.components.ListRenderable;
@@ -26,7 +25,8 @@ public class ConfigDialog extends Dialog {
 
         this.layoutManager = new ListLayout(true);
 
-        this.addComponent(new BorderRenderable(new ConstSingleLineStringRenderable("Configuration"), BorderRenderable.BorderStyle.EMPTY, 1, BorderRenderable.BORDER_BOTTOM));
+        this.addComponent(new ConstSingleLineStringRenderable("Configuration"));
+        this.addComponent(new ConstSingleLineStringRenderable(""));
 
         this.configList = new ListRenderable<>();
         this.configList.setFocus(true);
