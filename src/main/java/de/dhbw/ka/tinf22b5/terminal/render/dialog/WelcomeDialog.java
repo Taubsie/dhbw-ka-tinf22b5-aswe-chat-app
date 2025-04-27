@@ -28,6 +28,9 @@ public class WelcomeDialog extends Dialog {
             case TerminalKey.TK_C, TerminalKey.TK_c:
                 terminal.pushDialog(new ConfigDialog());
                 return true;
+            case TerminalKey.TK_E, TerminalKey.TK_e:
+                terminal.pushDialog(new ChatDialog());
+                return true;
         }
 
         return false;
