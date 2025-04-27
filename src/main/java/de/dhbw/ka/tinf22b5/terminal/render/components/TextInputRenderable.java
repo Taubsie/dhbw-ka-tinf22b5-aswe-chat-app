@@ -59,6 +59,8 @@ public class TextInputRenderable extends TerminalRenderable implements Focusable
         if (!isVisible())
             return;
 
+        terminalScreen.setCursorPosition(startPoint.x, startPoint.y);
+
         if (size.width >= text.length() + 1) {
             terminalScreen.addString(text.toString());
         } else {
