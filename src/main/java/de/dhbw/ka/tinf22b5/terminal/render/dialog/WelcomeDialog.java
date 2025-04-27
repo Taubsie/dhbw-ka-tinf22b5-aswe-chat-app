@@ -26,7 +26,7 @@ public class WelcomeDialog extends Dialog {
     public boolean handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
         switch (event.getTerminalKey()) {
             case TerminalKey.TK_C, TerminalKey.TK_c:
-                terminal.changeDialog(new ConfigDialog());
+                terminal.pushDialog(new ConfigDialog());
                 return true;
         }
 

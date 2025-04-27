@@ -28,6 +28,10 @@ public class ListRenderable<T extends TerminalRenderable> extends TerminalRender
         items.add(item);
     }
 
+    public T getItem(int idx) {
+        return items.get(idx);
+    }
+
     public void clearItems() {
         selectedIdx = 0;
         scrollOffset = 0;

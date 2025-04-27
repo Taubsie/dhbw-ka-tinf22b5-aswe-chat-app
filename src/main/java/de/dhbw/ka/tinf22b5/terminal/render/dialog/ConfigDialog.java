@@ -39,6 +39,18 @@ public class ConfigDialog extends Dialog {
     }
 
     @Override
+    public void layout() {
+        updateConfigs();
+        super.layout();
+    }
+
+    private void updateConfigs() {
+        for (int i = 0; i < ConfigurationKey.values().length; i++) {
+            this.configList.getItem(i).valueText.setText(repository.getConfigurationValue(ConfigurationKey.values()[i]).orElse("No value set"));
+        }
+    }
+
+    @Override
     public boolean handleInput(TerminalHandler terminal, TerminalKeyEvent event) throws IOException {
         if (this.configList.handleInput(event))
             return true;
@@ -48,7 +60,7 @@ public class ConfigDialog extends Dialog {
                 Optional<ConfigurationKey> config = ConfigurationKey.getByOrdinal(this.configList.getSelectedIdx());
 
                 if (config.isPresent()) {
-                    terminal.changeDialog(new ConfigChangeDialog(repository, config.get()));
+                    terminal.pushDialog(new ConfigChangeDialog(repository, config.get()));
                 }
 
                 return true;
@@ -56,7 +68,7 @@ public class ConfigDialog extends Dialog {
                 repository.loadConfiguration();
                 return true;
             case TerminalKey.TK_ESCAPE:
-                terminal.changeDialog(new WelcomeDialog());
+                terminal.popDialog();
                 return true;
         }
 
@@ -75,8 +87,8 @@ public class ConfigDialog extends Dialog {
 
     private static class ConfigListItem extends ContainerRenderable {
 
-        private final ConstSingleLineStringRenderable keyText;
-        private final ConstSingleLineStringRenderable valueText;
+        final ConstSingleLineStringRenderable keyText;
+        final ConstSingleLineStringRenderable valueText;
 
         ConfigListItem(ConfigurationKey key, String value) {
             this.layoutManager = new ListLayout(true);

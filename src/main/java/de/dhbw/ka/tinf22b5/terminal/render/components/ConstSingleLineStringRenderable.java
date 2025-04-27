@@ -6,9 +6,17 @@ import java.awt.*;
 
 public class ConstSingleLineStringRenderable extends TerminalRenderable {
 
-    private final String string;
+    private String string;
 
     public ConstSingleLineStringRenderable(String string) {
+        this.string = string;
+    }
+
+    public String getText() {
+        return string;
+    }
+
+    public void setText(String string) {
         this.string = string;
     }
 

@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.Stack;
 
 public class BaseTerminalHandler implements TerminalHandler {
     private Dialog currentDialog;
@@ -28,12 +29,17 @@ public class BaseTerminalHandler implements TerminalHandler {
     private final TerminalRenderingBuffer renderingBuffer;
     private final TerminalScreen terminalScreen;
 
+    private final Stack<Dialog> dialogStack;
+
     public BaseTerminalHandler(Dialog currentDialog) throws TerminalHandlerException {
         this.currentDialog = currentDialog;
 
         this.ioTerminalHandler = IOTerminalFactory.createTerminalHandler();
         this.renderingBuffer = new BaseTerminalRenderingBuffer();
         this.terminalScreen = new BaseTerminalScreen();
+
+        this.dialogStack = new Stack<>();
+        this.dialogStack.push(this.currentDialog);
     }
 
     @Override
@@ -71,6 +77,22 @@ public class BaseTerminalHandler implements TerminalHandler {
 
         setCursorX(1);
         setCursorY(1);
+
+        updateTerminal();
+    }
+
+    @Override
+    public void pushDialog(Dialog dialog) throws IOException {
+        dialogStack.push(currentDialog);
+
+        currentDialog = dialog;
+
+        updateTerminal();
+    }
+
+    @Override
+    public void popDialog() throws IOException {
+        currentDialog = dialogStack.pop();
 
         updateTerminal();
     }

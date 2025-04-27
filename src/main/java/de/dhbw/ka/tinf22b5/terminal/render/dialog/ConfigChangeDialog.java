@@ -54,7 +54,7 @@ public class ConfigChangeDialog extends Dialog {
                     }
                 case TerminalKey.TK_CTRL_Q:
                 case TerminalKey.TK_ESCAPE:
-                    terminal.changeDialog(new ConfigDialog());
+                    terminal.popDialog();
                     return true;
             }
 
