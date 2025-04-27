@@ -62,26 +62,20 @@ public class ListRenderable<T extends TerminalRenderable> extends TerminalRender
 
     @Override
     public void layout() {
-        int maxWidth = 0;
         int cummulativeHeight = 0;
 
         for (TerminalRenderable item : items) {
-            if (item.getPreferredSize().width < 0) {
-                maxWidth = this.size.width;
-            } else
-                maxWidth = Math.max(maxWidth, item.getPreferredSize().width);
-
             if (item.getPreferredSize().height < 0) {
                 cummulativeHeight += this.size.height;
             } else
                 cummulativeHeight += item.getPreferredSize().height;
         }
 
-        this.virtualScreenSize = new Dimension(maxWidth, cummulativeHeight);
+        this.virtualScreenSize = new Dimension(this.size.width, cummulativeHeight);
 
         int y = 0;
         for (TerminalRenderable item : items) {
-            Dimension childSize = new Dimension(maxWidth, item.getPreferredSize().height);
+            Dimension childSize = new Dimension(this.size.width, item.getPreferredSize().height);
             if (childSize.height < 0)
                 childSize.height = this.size.height;
 
