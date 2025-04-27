@@ -48,7 +48,7 @@ public class ListLayout implements LayoutManager {
         if (preferedMaxHeight)
             preferedHeight = Math.max(preferedHeight, size.height);
 
-        if (preferedWidth <= size.width && preferedHeight <= size.height) {
+        if (preferedWidth <= size.width && preferedHeight <= size.height && !preferedMaxHeight) {
             // can layout as wanted
             int y = startPoint.y;
             for (TerminalRenderable child : children) {
@@ -64,7 +64,7 @@ public class ListLayout implements LayoutManager {
                 child.setStartPoint(new Point(startPoint.x, y));
                 y += childrenPrefSize.height;
             }
-        } else if (minimumWidth <= size.width && minimumHeight <= size.height) {
+        } else if (minimumWidth <= size.width && minimumHeight <= size.height  && !preferedMaxHeight) {
             int y = startPoint.y;
             for (TerminalRenderable child : children) {
                 child.setVisible(true);
@@ -85,7 +85,7 @@ public class ListLayout implements LayoutManager {
                 for (int i = children.length - 1; i >= 0; i--) {
                     TerminalRenderable child = children[i];
 
-                    Dimension childSize = child.getMinimumSize();
+                    Dimension childSize = child.getPreferredSize();
                     if (childSize.height < 0)
                         childSize.height = remainingHeight;
 
@@ -94,7 +94,7 @@ public class ListLayout implements LayoutManager {
                     } else {
                         child.setVisible(true);
                         child.setSize(new Dimension(width, childSize.height));
-                        child.setStartPoint(new Point(startPoint.x, startPoint.y + remainingHeight - 1));
+                        child.setStartPoint(new Point(startPoint.x, startPoint.y + remainingHeight - childSize.height));
                         remainingHeight -= childSize.height;
                     }
                 }
@@ -104,7 +104,7 @@ public class ListLayout implements LayoutManager {
                 for (int i = 0; i < children.length; i++) {
                     TerminalRenderable child = children[i];
 
-                    Dimension childSize = child.getMinimumSize();
+                    Dimension childSize = child.getPreferredSize();
                     if (childSize.height < 0)
                         childSize.height = remainingHeight;
 
