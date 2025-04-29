@@ -8,10 +8,14 @@ import de.dhbw.ka.tinf22b5.util.OSUtil;
 public class IOTerminalFactory {
 
     public static IOTerminalHandler createTerminalHandler() throws TerminalHandlerException {
-        return switch (OSUtil.getOS()) {
+        IOTerminalHandler handler = switch (OSUtil.getOS()) {
             case WIN -> new WindowsTerminalHandler();
             case LINUX -> new LinuxTerminalHandler();
             default -> throw new TerminalHandlerException("Unsupported OS: " + OSUtil.getOS());
         };
+
+        handler.attachShutdownHook();
+
+        return handler;
     }
 }
