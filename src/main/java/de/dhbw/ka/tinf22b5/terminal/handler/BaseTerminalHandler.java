@@ -20,9 +20,6 @@ import java.util.Stack;
 public class BaseTerminalHandler implements TerminalHandler {
     private Dialog currentDialog;
 
-    private int cursorX = 1;
-    private int cursorY = 1;
-
     private boolean running = true;
 
     private final IOTerminalHandler ioTerminalHandler;
@@ -115,7 +112,6 @@ public class BaseTerminalHandler implements TerminalHandler {
         renderingBuffer.resetGraphicsModes();
         renderingBuffer.scrollScreenUp();
         terminalScreen.renderIntoBuffer(renderingBuffer);
-        renderingBuffer.moveCursor(cursorX, cursorY);
         System.out.write(renderingBuffer.getBuffer());
     }
 
