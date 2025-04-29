@@ -64,9 +64,6 @@ public class ConfigDialog extends Dialog {
                 }
 
                 return true;
-            case TerminalKey.TK_r, TerminalKey.TK_R:
-                repository.loadConfiguration();
-                return true;
             case TerminalKey.TK_ESCAPE:
                 terminal.popDialog();
                 return true;
