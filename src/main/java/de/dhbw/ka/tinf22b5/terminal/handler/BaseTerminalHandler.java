@@ -64,6 +64,13 @@ public class BaseTerminalHandler implements TerminalHandler {
 
     public void run() throws IOException, TerminalHandlerException {
         this.ioTerminalHandler.init();
+        this.ioTerminalHandler.addResizeListener(() -> {
+            try {
+                updateTerminal();
+            } catch (IOException e){
+                // ignored
+            }
+        });
 
         // TODO: make cleaner
         System.out.write(renderingBuffer.clear().alternateScreenEnable().setCursorVisible(false).getBuffer());
@@ -97,7 +104,7 @@ public class BaseTerminalHandler implements TerminalHandler {
         }
     }
 
-    public void updateTerminal() throws IOException {
+    public synchronized void updateTerminal() throws IOException {
         Dimension terminalSize = this.ioTerminalHandler.getSize();
 
         terminalScreen.clear();

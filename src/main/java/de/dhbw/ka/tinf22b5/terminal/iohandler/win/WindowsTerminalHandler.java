@@ -7,8 +7,9 @@ import java.awt.*;
 import java.io.IOException;
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class WindowsTerminalHandler implements IOTerminalHandler {
+public class WindowsTerminalHandler extends IOTerminalHandler {
 
     /* ---------------------
      * console mode constants
@@ -18,6 +19,7 @@ public class WindowsTerminalHandler implements IOTerminalHandler {
     private static final int STD_INPUT_HANDLE = -10;
     private static final int STD_OUTPUT_HANDLE = -11;
     private static final int ENABLE_VIRTUAL_TERMINAL_INPUT = 512;
+    private static final int ENABLE_WINDOW_INPUT = 8;
     private static final int ENABLE_PROCESSED_OUTPUT = 1;
     private static final int ENABLE_WRAP_AT_EOL_OUTPUT = 2;
     private static final int ENABLE_VIRTUAL_TERMINAL_PROCESSING = 4;
@@ -30,6 +32,14 @@ public class WindowsTerminalHandler implements IOTerminalHandler {
      */
     private static final int MAX_CONSOLE_SCREEN_BUFFER_INFO_SIZE = 1024;
 
+    /* ---------------------
+     * wait for single input constant
+     * ---------------------
+     */
+    private static final int WAIT_OBJECT_0 = 0x00000000;
+    private static final int WAIT_TIMEOUT = 0x00000102;
+    private static final int ASYNC_TIMEOUT_MILLIS = 500;
+
     private MethodHandle hdlGetStdHandle;
     private MethodHandle hdlGetConsoleMode;
     private MethodHandle hdlSetConsoleMode;
@@ -40,9 +50,18 @@ public class WindowsTerminalHandler implements IOTerminalHandler {
 
     private MethodHandle hdlGetConsoleScreenBufferInfo;
 
+    private MethodHandle hdlWaitForSingleObject;
+    private Thread resizeListenerThread;
+    private final AtomicBoolean resizeListenerRunning;
+
+    public WindowsTerminalHandler() {
+         resizeListenerRunning = new AtomicBoolean(false);
+    }
+
     @Override
     public void init() throws TerminalHandlerException {
         getCFunctionHandles();
+        createResizeListener();
         enableRawMode();
     }
 
@@ -67,12 +86,62 @@ public class WindowsTerminalHandler implements IOTerminalHandler {
         hdlSetConsoleMode = linker.downcallHandle(setConsoleModeAddress, setConsoleModeDescriptor);
 
         /* ---------------------
-         * screnn buffer info hdl
+         * screen buffer info hdl
          * ---------------------
          */
         MemorySegment getConsoleScreenBufferInfoAddress = kernel32.find("GetConsoleScreenBufferInfo").orElseThrow();
         FunctionDescriptor getConsoleScreenBufferInfoDescriptor = FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.ADDRESS);
         hdlGetConsoleScreenBufferInfo = linker.downcallHandle(getConsoleScreenBufferInfoAddress, getConsoleScreenBufferInfoDescriptor);
+
+        /* ---------------------
+         * wait for single object hdl
+         * ---------------------
+         */
+        MemorySegment waitForSingleObjectAddress = kernel32.find("WaitForSingleObject").orElseThrow();
+        FunctionDescriptor waitForSingleObjectDescriptor = FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT);
+        hdlWaitForSingleObject = linker.downcallHandle(waitForSingleObjectAddress, waitForSingleObjectDescriptor);
+    }
+
+    private synchronized void createResizeListener() {
+        if (resizeListenerRunning.get())
+            return;
+
+        this.resizeListenerThread = new Thread(() -> {
+            this.resizeListenerRunning.set(true);
+
+            try (Arena _ = Arena.ofConfined()) {
+                // get stdin hdl
+                MemorySegment hdlIn = (MemorySegment) hdlGetStdHandle.invoke(STD_INPUT_HANDLE);
+                if (hdlIn.address() == INVALID_HANDLE_VALUE)
+                    return;
+
+                Dimension prevDimension = this.getSize();
+
+                while (this.resizeListenerRunning.get()) {
+                    int statusHdl = (int) hdlWaitForSingleObject.invoke(hdlIn, ASYNC_TIMEOUT_MILLIS);
+                    switch (statusHdl) {
+                        // available to read
+                        case WAIT_OBJECT_0:
+                            Dimension newDimension = this.getSize();
+                            if (!prevDimension.equals(newDimension)) {
+                                prevDimension = newDimension;
+                                reportResize();
+                            }
+
+                            break;
+                        case WAIT_TIMEOUT:
+                        default:
+                            // ran in timeout
+                    }
+                }
+            } catch (Throwable e) {
+                // ignored
+                e.printStackTrace();
+            }
+        });
+        this.resizeListenerThread.setName("WindowsEventListener");
+        this.resizeListenerThread.setDaemon(true);
+        this.resizeListenerThread.start();
     }
 
     private void enableRawMode() throws TerminalHandlerException {
@@ -93,7 +162,7 @@ public class WindowsTerminalHandler implements IOTerminalHandler {
 
             int stdinMode = pInt.get(ValueLayout.JAVA_INT, 0);
             origIn = stdinMode;
-            stdinMode = ENABLE_VIRTUAL_TERMINAL_INPUT;
+            stdinMode = ENABLE_VIRTUAL_TERMINAL_INPUT | ENABLE_WINDOW_INPUT;
 
             err = (int) hdlSetConsoleMode.invoke(hdlIn, stdinMode);
             if (err == 0)
@@ -210,5 +279,15 @@ public class WindowsTerminalHandler implements IOTerminalHandler {
     @Override
     public void deinit() throws TerminalHandlerException {
         disableRawMode();
+
+        synchronized (this) {
+            this.resizeListenerRunning.set(false);
+            try {
+                if (this.resizeListenerThread != null)
+                    this.resizeListenerThread.join();
+            } catch (InterruptedException e) {
+                // ignored
+            }
+        }
     }
 }
