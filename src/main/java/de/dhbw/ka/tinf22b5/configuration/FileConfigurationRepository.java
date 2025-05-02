@@ -31,8 +31,7 @@ public class FileConfigurationRepository extends FileStorage implements Configur
         });
     }
 
-    @Override
-    public void loadConfiguration() {
+    private void loadConfiguration() {
         Path directoryPath = getDirectoryPath();
 
         try {
@@ -77,8 +76,7 @@ public class FileConfigurationRepository extends FileStorage implements Configur
         saveConfiguration();
     }
 
-    @Override
-    public void saveConfiguration() {
+    private void saveConfiguration() {
         try {
             properties.store(Files.newBufferedWriter(getFilePath()), null);
         } catch (IOException ioException) {
@@ -87,12 +85,12 @@ public class FileConfigurationRepository extends FileStorage implements Configur
     }
 
     @Override
-    public String getDirectoryName() {
+    protected String getDirectoryName() {
         return "config";
     }
 
     @Override
-    public String getFileName() {
+    protected String getFileName() {
         return "client.properties";
     }
 }

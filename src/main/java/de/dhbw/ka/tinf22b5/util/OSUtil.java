@@ -6,7 +6,7 @@ public class OSUtil {
         WIN,
         LINUX,
         MAC,
-        OTHER;
+        OTHER
     }
 
     public static OS getOS() {

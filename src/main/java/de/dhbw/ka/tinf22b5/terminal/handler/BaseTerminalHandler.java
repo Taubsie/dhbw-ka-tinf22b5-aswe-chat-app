@@ -1,99 +1,134 @@
 package de.dhbw.ka.tinf22b5.terminal.handler;
 
-import de.dhbw.ka.tinf22b5.dialog.Dialog;
+import de.dhbw.ka.tinf22b5.terminal.iohandler.IOTerminalFactory;
+import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
+import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalScreen;
+import de.dhbw.ka.tinf22b5.terminal.render.TerminalScreen;
+import de.dhbw.ka.tinf22b5.terminal.render.dialog.Dialog;
+import de.dhbw.ka.tinf22b5.terminal.exception.TerminalHandlerException;
+import de.dhbw.ka.tinf22b5.terminal.iohandler.IOTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyParser;
 import de.dhbw.ka.tinf22b5.terminal.render.BaseTerminalRenderingBuffer;
 import de.dhbw.ka.tinf22b5.terminal.render.TerminalRenderingBuffer;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.IOException;
+import java.util.Stack;
 
-public abstract class BaseTerminalHandler implements TerminalHandler {
+public class BaseTerminalHandler implements TerminalHandler {
     private Dialog currentDialog;
-
-    private int cursorX = 1;
-    private int cursorY = 1;
 
     private boolean running = true;
 
+    private final IOTerminalHandler ioTerminalHandler;
     private final TerminalRenderingBuffer renderingBuffer;
+    private final TerminalScreen terminalScreen;
 
-    public BaseTerminalHandler(Dialog currentDialog) {
+    private final Stack<Dialog> dialogStack;
+
+    public BaseTerminalHandler(Dialog currentDialog) throws TerminalHandlerException {
         this.currentDialog = currentDialog;
-        renderingBuffer = new BaseTerminalRenderingBuffer();
-    }
 
-    @Override
-    public int getCursorX() {
-        return cursorX;
-    }
+        this.ioTerminalHandler = IOTerminalFactory.createTerminalHandler();
+        this.renderingBuffer = new BaseTerminalRenderingBuffer();
+        this.terminalScreen = new BaseTerminalScreen();
 
-    @Override
-    public int getCursorY() {
-        return cursorY;
-    }
-
-    @Override
-    public void setCursorX(int x) {
-        this.cursorX = x;
-    }
-
-    @Override
-    public void setCursorY(int y) {
-        this.cursorY = y;
+        this.dialogStack = new Stack<>();
+        this.dialogStack.push(this.currentDialog);
     }
 
     @Override
     public void changeDialog(@NotNull Dialog dialog) throws IOException {
         currentDialog = dialog;
 
-        setCursorX(1);
-        setCursorY(1);
+        updateTerminal();
+    }
+
+    @Override
+    public void pushDialog(Dialog dialog) throws IOException {
+        dialogStack.push(currentDialog);
+
+        currentDialog = dialog;
 
         updateTerminal();
     }
 
-    public void run() throws IOException {
+    @Override
+    public void popDialog() throws IOException {
+        currentDialog = dialogStack.pop();
+
+        updateTerminal();
+    }
+
+    public void run() throws IOException, TerminalHandlerException {
+        this.ioTerminalHandler.init();
+        this.ioTerminalHandler.addResizeListener(() -> {
+            try {
+                updateTerminal();
+            } catch (IOException e){
+                // ignored
+            }
+        });
+
+        // TODO: make cleaner
+        System.out.write(renderingBuffer.clear().alternateScreenEnable().setCursorVisible(false).getBuffer());
+
         TerminalKeyParser terminalKeyParser = new TerminalKeyParser();
 
         while (running) {
             updateTerminal();
 
-            TerminalKeyEvent event = terminalKeyParser.parseTerminalKeyInput(this, this.getChar());
-            handleInput(event);
+            TerminalKeyEvent event = terminalKeyParser.parseTerminalKeyInput(ioTerminalHandler.getChar());
+            handleInput(this, event);
         }
 
-        System.out.write(renderingBuffer.clear().scrollScreenUp().setCursorVisible(true).getBuffer());
-    }
-
-    public void handleInput(TerminalKeyEvent event) throws IOException {
-        currentDialog.handleInput(event, this);
-    }
-
-    public void updateTerminal() throws IOException {
+        // TODO: make cleaner
         renderingBuffer.clear();
-        renderingBuffer.clearScreen();
-        addEmptyPage(renderingBuffer);
-        renderingBuffer.clearScreen();
-        currentDialog.render(renderingBuffer);
-        renderingBuffer.moveCursor(cursorX, cursorY);
+        renderingBuffer.alternateScreenDisable();
+        renderingBuffer.setCursorVisible(true);
+        renderingBuffer.resetGraphicsModes();
         System.out.write(renderingBuffer.getBuffer());
     }
 
-    private void addEmptyPage(TerminalRenderingBuffer renderingBuffer) {
-        Dimension terminalSize = this.getSize();
-        for (int row = 0; row < terminalSize.height; row++) {
-            for (int col = 0; col < terminalSize.width; col++) {
-                renderingBuffer.addString(" ");
-            }
-            if (row < terminalSize.height - 1)
-                renderingBuffer.nextLine();
+    public void handleInput(TerminalHandler terminalHandler, TerminalKeyEvent event) throws IOException {
+        if (currentDialog.handleInput(terminalHandler, event))
+            return;
+
+        switch (event.getTerminalKey()) {
+            case TerminalKey.TK_Q:
+            case TerminalKey.TK_q:
+            case TerminalKey.TK_CTRL_C:
+                this.quit();
         }
+    }
+
+    public synchronized void updateTerminal() throws IOException {
+        Dimension terminalSize = this.ioTerminalHandler.getSize();
+
+        terminalScreen.clear();
+        terminalScreen.doResize(terminalSize);
+
+        currentDialog.setStartPoint(new Point(0, 0));
+        currentDialog.setSize(terminalSize);
+        currentDialog.layout();
+        currentDialog.render(terminalScreen);
+
+        renderingBuffer.clear();
+        renderingBuffer.resetGraphicsModes();
+        renderingBuffer.scrollScreenUp();
+        terminalScreen.renderIntoBuffer(renderingBuffer);
+        System.out.write(renderingBuffer.getBuffer());
     }
 
     public void quit() {
         running = false;
+
+        try {
+            this.ioTerminalHandler.deinit();
+        } catch (TerminalHandlerException _) {
+            // ignore closing errors
+        }
     }
 }
