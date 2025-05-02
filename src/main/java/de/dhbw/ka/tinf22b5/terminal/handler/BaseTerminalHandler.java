@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Stack;
 
 public class BaseTerminalHandler implements TerminalHandler {
@@ -25,6 +26,7 @@ public class BaseTerminalHandler implements TerminalHandler {
     private final IOTerminalHandler ioTerminalHandler;
     private final TerminalRenderingBuffer renderingBuffer;
     private final TerminalScreen terminalScreen;
+    private final OutputStream outputStream;
 
     private final Stack<Dialog> dialogStack;
 
@@ -34,6 +36,7 @@ public class BaseTerminalHandler implements TerminalHandler {
         this.ioTerminalHandler = IOTerminalFactory.createTerminalHandler();
         this.renderingBuffer = new BaseTerminalRenderingBuffer();
         this.terminalScreen = new BaseTerminalScreen();
+        this.outputStream = System.out;
 
         this.dialogStack = new Stack<>();
         this.dialogStack.push(this.currentDialog);
@@ -72,8 +75,7 @@ public class BaseTerminalHandler implements TerminalHandler {
             }
         });
 
-        // TODO: make cleaner
-        System.out.write(renderingBuffer.clear().alternateScreenEnable().setCursorVisible(false).getBuffer());
+        outputStream.write(renderingBuffer.clear().alternateScreenEnable().setCursorVisible(false).getBuffer());
 
         TerminalKeyParser terminalKeyParser = new TerminalKeyParser();
 
@@ -84,12 +86,11 @@ public class BaseTerminalHandler implements TerminalHandler {
             handleInput(this, event);
         }
 
-        // TODO: make cleaner
         renderingBuffer.clear();
         renderingBuffer.alternateScreenDisable();
         renderingBuffer.setCursorVisible(true);
         renderingBuffer.resetGraphicsModes();
-        System.out.write(renderingBuffer.getBuffer());
+        outputStream.write(renderingBuffer.getBuffer());
     }
 
     public void handleInput(TerminalHandler terminalHandler, TerminalKeyEvent event) throws IOException {
@@ -119,7 +120,7 @@ public class BaseTerminalHandler implements TerminalHandler {
         renderingBuffer.resetGraphicsModes();
         renderingBuffer.scrollScreenUp();
         terminalScreen.renderIntoBuffer(renderingBuffer);
-        System.out.write(renderingBuffer.getBuffer());
+        outputStream.write(renderingBuffer.getBuffer());
     }
 
     public void quit() {
