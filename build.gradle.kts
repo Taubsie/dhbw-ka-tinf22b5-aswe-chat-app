@@ -22,6 +22,14 @@ dependencies {
     testImplementation(kotlin("test"))
 }
 
+testing {
+    suites {
+        val test by getting(JvmTestSuite::class) {
+            useJUnitJupiter()
+        }
+    }
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(23)
