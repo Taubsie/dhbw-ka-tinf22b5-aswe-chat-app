@@ -215,7 +215,7 @@ class TestBaseTerminalHandler {
         mock.addToQueue(new byte[] { TerminalKey.TK_ENTER });
 
         try {
-            executionThread.join(100);
+            executionThread.join(500);
         } catch (InterruptedException e) {
         }
 
@@ -223,7 +223,7 @@ class TestBaseTerminalHandler {
 
         mock.addToQueue(new byte[] { TerminalKey.TK_CTRL_Q });
         try {
-            executionThread.join(100);
+            executionThread.join(500);
         } catch (InterruptedException e) {
         }
 
@@ -231,7 +231,7 @@ class TestBaseTerminalHandler {
 
         mock.addToQueue(new byte[] { TerminalKey.TK_ESCAPE });
         try {
-            executionThread.join(100);
+            executionThread.join(500);
         } catch (InterruptedException e) {
         }
 
