@@ -168,8 +168,9 @@ class TestBaseTerminalHandler {
             throw new RuntimeException(e);
         }
 
-
-        Thread executionThread = startBaseTerminalHandlerQueue(handler, mock, new ByteArrayOutputStream());
+        assertTrue(FieldSwitcher.switchField(handler, "ioTerminalHandler", mock));
+        assertTrue(FieldSwitcher.switchField(handler, "outputStream", new ByteArrayOutputStream()));
+        mock.init();
         mock.addResizeListener(() -> {
             try {
                 handler.updateTerminal();
@@ -177,17 +178,25 @@ class TestBaseTerminalHandler {
                 throw new RuntimeException(e);
             }
         });
-        executionThread.start();
+
+
+        assertEquals(0, currentDialog.getTimesRendered());
+        assertEquals(0, currentDialog.getTimesLayouted());
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+        }
 
         mock.windowResized(new Dimension(100, 100));
 
         try {
-            executionThread.join(500);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
         }
 
-        assertEquals(2, currentDialog.getTimesRendered());
-        assertEquals(2, currentDialog.getTimesLayouted());
+        assertEquals(1, currentDialog.getTimesRendered());
+        assertEquals(1, currentDialog.getTimesLayouted());
     }
 
     @Test
