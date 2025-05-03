@@ -59,10 +59,9 @@ public class ChatDialog extends Dialog {
         c2.addMessage(new Message("Message2", Calendar.getInstance(), false));
         c2.addMessage(new Message("Message3", Calendar.getInstance(), false));
         c2.addMessage(new Message("Message4", Calendar.getInstance(), true));
-        updateChatUI();
     }
 
-    public void updateChatUI() {
+    private void updateChatUI() {
         int userSelectedIdx = userList.getSelectedIdx();
 
         userList.clearItems();
@@ -78,7 +77,7 @@ public class ChatDialog extends Dialog {
         int chatSelectedIdx = chatList.getSelectedIdx();
         int chatLength = chatList.getItemCount();
 
-        Chat chat = chats.get(userList.getSelectedIdx());
+        Chat chat = chats.get(userSelectedIdx);
         chatList.clearItems();
         for (int i = 0; i < chat.getMessages().size(); i++) {
             Message message = chat.getMessages().get(i);
@@ -86,6 +85,9 @@ public class ChatDialog extends Dialog {
             borderModifiers |= BorderRenderable.BORDER_BOTTOM;
 
             String str = message.isRemoteMessage() ? chat.getRemoteUser().getName() : "Me";
+            if (str.length() > 20)
+                str = str.substring(0, 20);
+
             str += ": " + message.getMessage();
 
             chatList.addItem(new BorderRenderable(new ConstSingleLineStringRenderable(str), BorderRenderable.BorderStyle.DASHED, 1, borderModifiers));
@@ -94,9 +96,15 @@ public class ChatDialog extends Dialog {
         if(currentChatId == userSelectedIdx)
             chatList.setSelectedIdx(chatList.getItemCount() - chatLength + chatSelectedIdx);
         else {
-            currentChatId = chatSelectedIdx;
+            currentChatId = userSelectedIdx;
             chatList.setSelectedIdx(0);
         }
+    }
+
+    @Override
+    public void layout() {
+        updateChatUI();
+        super.layout();
     }
 
     @Override
@@ -115,9 +123,8 @@ public class ChatDialog extends Dialog {
                 } else if (currentlyFocused == chatList) {
                     // TODO: currently not implemented
                 } else if (currentlyFocused == userList) {
-                    updateChatUI();
+                    // TODO: nothing to do no enter needed
                 }
-
         }
 
         return false;
@@ -132,7 +139,6 @@ public class ChatDialog extends Dialog {
         chats.get(userList.getSelectedIdx()).addMessage(new Message(textInput.getText(), Calendar.getInstance(), false));
 
         textInput.clearText();
-        updateChatUI();
         try {
             handler.updateTerminal();
         } catch (IOException e) {
