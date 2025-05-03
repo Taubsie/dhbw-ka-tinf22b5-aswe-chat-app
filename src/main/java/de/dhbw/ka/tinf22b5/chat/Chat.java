@@ -13,8 +13,12 @@ public class Chat {
         this.remote = remote;
     }
 
+    public void addMessage(Message message) {
+        messages.addFirst(message);
+    }
+
     public List<Message> getMessages() {
-        return messages;
+        return new LinkedList<>(messages);
     }
 
     public User getRemoteUser() {

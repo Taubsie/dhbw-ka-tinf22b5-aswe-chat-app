@@ -44,20 +44,21 @@ public class ChatDialog extends Dialog {
                 BorderRenderable.BORDER_TOP | BorderRenderable.BORDER_BOTTOM | BorderRenderable.BORDER_LEFT | BorderRenderable.BORDER_RIGHT));
         this.addComponent(new BorderRenderable(panel, BorderRenderable.BorderStyle.DASHED, 1, BorderRenderable.BORDER_LEFT));
 
+        // TODO: create chats with networking or create setter
         chats = new ArrayList<>();
         Chat c1 = new Chat(new User("Test1"));
         chats.add(c1);
-        c1.getMessages().add(0, new Message("Message1", Calendar.getInstance(), true));
-        c1.getMessages().add(0, new Message("Message2", Calendar.getInstance(), false));
-        c1.getMessages().add(0, new Message("Message3", Calendar.getInstance(), false));
-        c1.getMessages().add(0, new Message("Message4", Calendar.getInstance(), true));
+        c1.addMessage(new Message("Message1", Calendar.getInstance(), true));
+        c1.addMessage(new Message("Message2", Calendar.getInstance(), false));
+        c1.addMessage(new Message("Message3", Calendar.getInstance(), false));
+        c1.addMessage(new Message("Message4", Calendar.getInstance(), true));
 
         Chat c2 = new Chat(new User("Test2"));
         chats.add(c2);
-        c2.getMessages().add(0, new Message("Message1", Calendar.getInstance(), false));
-        c2.getMessages().add(0, new Message("Message2", Calendar.getInstance(), false));
-        c2.getMessages().add(0, new Message("Message3", Calendar.getInstance(), false));
-        c2.getMessages().add(0, new Message("Message4", Calendar.getInstance(), true));
+        c2.addMessage(new Message("Message1", Calendar.getInstance(), false));
+        c2.addMessage(new Message("Message2", Calendar.getInstance(), false));
+        c2.addMessage(new Message("Message3", Calendar.getInstance(), false));
+        c2.addMessage(new Message("Message4", Calendar.getInstance(), true));
         updateChatUI();
     }
 
@@ -70,7 +71,6 @@ public class ChatDialog extends Dialog {
         for (Chat chat : chats) {
             userList.addItem(new ConstSingleLineStringRenderable(chat.getRemoteUser().getName()));
         }
-
 
         if(userList.getItemCount() <= 0 || userList.getSelectedIdx() < 0 || userList.getSelectedIdx() >= userList.getItemCount())
             return;
@@ -129,7 +129,7 @@ public class ChatDialog extends Dialog {
             return;
 
         // TODO: Networking
-        chats.get(userList.getSelectedIdx()).getMessages().add(0, new Message(textInput.getText(), Calendar.getInstance(), false));
+        chats.get(userList.getSelectedIdx()).addMessage(new Message(textInput.getText(), Calendar.getInstance(), false));
 
         textInput.clearText();
         updateChatUI();
