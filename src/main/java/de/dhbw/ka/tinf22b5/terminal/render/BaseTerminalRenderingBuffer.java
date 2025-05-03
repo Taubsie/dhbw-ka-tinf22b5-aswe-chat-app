@@ -95,9 +95,10 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
 
     @Override
     public byte[] getBuffer() {
-        byte[] buffer = new byte[screenBuffer.size()];
+        int screenBufferSize = screenBuffer.size();
+        byte[] buffer = new byte[screenBufferSize];
 
-        for (int i = 0; i < screenBuffer.size(); i++) {
+        for (int i = 0; i < screenBufferSize; i++) {
             buffer[i] = screenBuffer.get(i);
         }
 
