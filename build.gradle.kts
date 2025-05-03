@@ -6,6 +6,7 @@ plugins {
     id("application")
     kotlin("jvm")
     id("com.gradleup.shadow") version "8.3.5"
+    id("jacoco")
 }
 
 group = "de.dhbw.ka.tinf22b5"
@@ -42,6 +43,14 @@ application {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+    }
 }
 
 task("createProperties") {
