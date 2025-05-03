@@ -32,6 +32,10 @@ public class ListRenderable<T extends TerminalRenderable> extends TerminalRender
         return items.get(idx);
     }
 
+    public int getItemCount() {
+        return items.size();
+    }
+
     public void clearItems() {
         selectedIdx = 0;
         scrollOffset = 0;
@@ -40,6 +44,10 @@ public class ListRenderable<T extends TerminalRenderable> extends TerminalRender
 
     public int getSelectedIdx() {
         return selectedIdx;
+    }
+
+    public void setSelectedIdx(int idx) {
+        this.selectedIdx = idx;
     }
 
     public boolean handleInput(TerminalKeyEvent event) {
