@@ -12,21 +12,21 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
         screenBuffer = new ArrayList<>();
     }
 
-    public void moveCursorToHome() {
-        addBytes(0x1b, '[', 'H');
-    }
-
     @Override
-    public TerminalRenderingBuffer clearScreen() {
-        addBytes(0x1b, '[', 'm');
-        moveCursorToHome();
+    public TerminalRenderingBuffer alternateScreenEnable() {
+        addBytes(0x1b, '[', '?', '1', '0', '4', '9', 'h', 0x1b, '[', '2', '2', ';', '0', ';', '0', 't');
         return this;
     }
 
     @Override
-    public TerminalRenderingBuffer scrollScreenUp() {
-        addBytes(0x1b, '[', '2', 'J');
-        moveCursorToHome();
+    public TerminalRenderingBuffer alternateScreenDisable() {
+        addBytes(0x1b, '[', '?', '1', '0', '4', '9', 'l', 0x1b, '[', '2', '3', ';', '0', ';', '0', 't');
+        return this;
+    }
+
+    @Override
+    public TerminalRenderingBuffer moveCursorToHome() {
+        addBytes(0x1b, '[', 'H');
         return this;
     }
 
@@ -38,8 +38,21 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
     }
 
     @Override
+    public TerminalRenderingBuffer scrollScreenUp() {
+        addBytes(0x1b, '[', '2', 'J');
+        moveCursorToHome();
+        return this;
+    }
+
+    @Override
     public TerminalRenderingBuffer setCursorVisible(boolean visible) {
         addBytes(0x1b, '[', '?', '2', '5', visible ? 'h' : 'l');
+        return this;
+    }
+
+    @Override
+    public TerminalRenderingBuffer resetGraphicsModes() {
+        addBytes(0x1b, '[', 'm');
         return this;
     }
 
@@ -82,9 +95,10 @@ public class BaseTerminalRenderingBuffer implements TerminalRenderingBuffer {
 
     @Override
     public byte[] getBuffer() {
-        byte[] buffer = new byte[screenBuffer.size()];
+        int screenBufferSize = screenBuffer.size();
+        byte[] buffer = new byte[screenBufferSize];
 
-        for (int i = 0; i < screenBuffer.size(); i++) {
+        for (int i = 0; i < screenBufferSize; i++) {
             buffer[i] = screenBuffer.get(i);
         }
 

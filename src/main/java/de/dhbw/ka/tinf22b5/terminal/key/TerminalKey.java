@@ -37,6 +37,7 @@ public class TerminalKey {
     public static final int TK_CTRL_F             = 0x06;
     public static final int TK_CTRL_G             = 0x07;
     public static final int TK_CTRL_H             = 0x08;
+    public static final int TK_CTRL_BACKSPACE     = 0x08;
     public static final int TK_CTRL_I             = 0x09;
     public static final int TK_CTRL_J             = 0x0a;
     public static final int TK_CTRL_K             = 0x0b;

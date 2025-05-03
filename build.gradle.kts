@@ -6,6 +6,7 @@ plugins {
     id("application")
     kotlin("jvm")
     id("com.gradleup.shadow") version "8.3.5"
+    id("jacoco")
 }
 
 group = "de.dhbw.ka.tinf22b5"
@@ -22,6 +23,14 @@ dependencies {
     testImplementation(kotlin("test"))
 }
 
+testing {
+    suites {
+        val test by getting(JvmTestSuite::class) {
+            useJUnitJupiter()
+        }
+    }
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(23)
@@ -34,6 +43,14 @@ application {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+    }
 }
 
 task("createProperties") {
@@ -43,15 +60,19 @@ task("createProperties") {
     doLast {
         val projectVersion = project.version.toString()
         val jdkName = Jvm.current().javaHome.name ?: "openjdk-23.0.1"
+        val jarFile = projectDir.resolve("build/libs/aswe-chat-app-$projectVersion-all.jar").absolutePath
 
         val executionFile = projectDir.resolve("execution/execute-shadow-jar-develop.sh")
-        executionFile.writeText("java --enable-native-access=ALL-UNNAMED -jar aswe-chat-app-$projectVersion-all.jar")
+        executionFile.parentFile.mkdirs()
+        executionFile.writeText("java --enable-native-access=ALL-UNNAMED -jar $jarFile")
 
         val developmentFile = projectDir.resolve("execution/execute-shadow-jar-develop.bat")
-        developmentFile.writeText("java --enable-native-access=ALL-UNNAMED -jar build/libs/aswe-chat-app-$projectVersion-all.jar")
+        developmentFile.parentFile.mkdirs()
+        developmentFile.writeText("java --enable-native-access=ALL-UNNAMED -jar $jarFile")
 
         val developmentFixedFile = projectDir.resolve("execution/execute-shadow-jar-develop-fixed.bat")
-        developmentFixedFile.writeText("%userprofile%/.jdks/$jdkName/bin/java --enable-native-access=ALL-UNNAMED -jar build/libs/aswe-chat-app-$projectVersion-all.jar")
+        developmentFixedFile.parentFile.mkdirs()
+        developmentFixedFile.writeText("%userprofile%/.jdks/$jdkName/bin/java --enable-native-access=ALL-UNNAMED -jar $jarFile")
 
         val p = Properties()
         p["version"] = projectVersion

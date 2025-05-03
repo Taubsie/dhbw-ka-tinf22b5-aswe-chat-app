@@ -1,15 +1,15 @@
-package de.dhbw.ka.tinf22b5.terminal.handler.lin;
+package de.dhbw.ka.tinf22b5.terminal.iohandler.lin;
 
-import de.dhbw.ka.tinf22b5.dialog.Dialog;
-import de.dhbw.ka.tinf22b5.terminal.handler.BaseTerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.exception.TerminalHandlerException;
+import de.dhbw.ka.tinf22b5.terminal.iohandler.IOTerminalHandler;
 
 import java.awt.*;
 import java.io.IOException;
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class LinuxTerminalHandler extends BaseTerminalHandler {
+public class LinuxTerminalHandler extends IOTerminalHandler {
 
     /* ---------------------
      * TERMIOS constants
@@ -61,13 +61,17 @@ public class LinuxTerminalHandler extends BaseTerminalHandler {
 
     private MethodHandle hdlIoctl;
 
-    public LinuxTerminalHandler(Dialog currentDialog) throws IOException {
-        super(currentDialog);
+    private Thread resizeListenerThread;
+    private final AtomicBoolean resizeListenerRunning;
+
+    public LinuxTerminalHandler() {
+        this.resizeListenerRunning = new AtomicBoolean(false);
     }
 
     @Override
     public void init() throws TerminalHandlerException {
         getCFunctionHandles();
+        createResizeListener();
         enableRawMode();
     }
 
@@ -94,6 +98,34 @@ public class LinuxTerminalHandler extends BaseTerminalHandler {
         MemorySegment ioctlAddress = stdlib.find("ioctl").orElseThrow();
         FunctionDescriptor ioctlDescriptor = FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.JAVA_LONG, ValueLayout.ADDRESS);
         hdlIoctl = linker.downcallHandle(ioctlAddress, ioctlDescriptor);
+    }
+
+    private synchronized void createResizeListener() {
+        if (this.resizeListenerRunning.get())
+            return;
+
+        this.resizeListenerThread = new Thread(() -> {
+            resizeListenerRunning.set(true);
+
+            // active dimension polling
+            Dimension prevDimension = this.getSize();
+            while (resizeListenerRunning.get()) {
+                Dimension newDimension = this.getSize();
+                if (!prevDimension.equals(newDimension)) {
+                    prevDimension = newDimension;
+                    reportResize();
+                }
+
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // ignored
+                }
+            }
+        });
+        this.resizeListenerThread.setName("LinuxSignalListener");
+        this.resizeListenerThread.setDaemon(true);
+        this.resizeListenerThread.start();
     }
 
     private void enableRawMode() throws TerminalHandlerException {
@@ -193,7 +225,15 @@ public class LinuxTerminalHandler extends BaseTerminalHandler {
     }
 
     @Override
-    public void deinit() throws TerminalHandlerException {
+    public synchronized void deinit() throws TerminalHandlerException {
         disableRawMode();
+
+        this.resizeListenerRunning.set(false);
+        try {
+            if (this.resizeListenerThread != null)
+                this.resizeListenerThread.join();
+        } catch (InterruptedException e) {
+            // ignored
+        }
     }
 }

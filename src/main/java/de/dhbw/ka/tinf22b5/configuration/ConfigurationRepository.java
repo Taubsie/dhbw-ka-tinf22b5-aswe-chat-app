@@ -6,11 +6,7 @@ public interface ConfigurationRepository {
     Optional<String> getConfigurationValue(ConfigurationKey key);
     Optional<Integer> getIntConfigurationValue(ConfigurationKey key);
 
-    void loadConfiguration();
-
     void setConfigurationValue(ConfigurationKey key, String value);
     void setIntConfigurationValue(ConfigurationKey key, int value);
     void removeConfigurationValue(ConfigurationKey key);
-
-    void saveConfiguration();
 }

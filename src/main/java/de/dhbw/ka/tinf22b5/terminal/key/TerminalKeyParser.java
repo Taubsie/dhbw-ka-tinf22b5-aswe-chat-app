@@ -1,26 +1,24 @@
 package de.dhbw.ka.tinf22b5.terminal.key;
 
-import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class TerminalKeyParser {
 
-    public TerminalKeyEvent parseTerminalKeyInput(TerminalHandler terminalHandler, byte[] keys) {
+    public TerminalKeyEvent parseTerminalKeyInput(byte[] keys) {
         /* ---------------------
          * on wrong data return valid event to prevent crashes
          * ---------------------
          */
         if (keys == null || keys.length == 0)
-            return new TerminalKeyEvent(terminalHandler);
+            return new TerminalKeyEvent();
 
         /* ---------------------
          * single key probably valid ascii char
          * ---------------------
          */
         if (keys.length == 1)
-            return parseSingleTerminalKeyInput(terminalHandler, keys[0]);
+            return parseSingleTerminalKeyInput(keys[0]);
 
         /* ---------------------
          * terminal escape chars start with 27
@@ -32,8 +30,8 @@ public class TerminalKeyParser {
              * ---------------------
              */
             if (keys.length == 2) {
-                TerminalKeyEvent event = parseSingleTerminalKeyInput(terminalHandler, keys[1]);
-                return new TerminalKeyEvent(terminalHandler, event.getUtf8Chars(), event.getKeyType(), event.getTerminalKey(), TerminalKey.TK_MODIFIER_ALT);
+                TerminalKeyEvent event = parseSingleTerminalKeyInput(keys[1]);
+                return new TerminalKeyEvent(event.getUtf8Chars(), event.getKeyType(), event.getTerminalKey(), TerminalKey.TK_MODIFIER_ALT);
             }
 
             /* ---------------------
@@ -41,18 +39,18 @@ public class TerminalKeyParser {
              * ---------------------
              */
             if (keys[1] == 0x1b) {
-                TerminalKeyEvent event = parseEscapeSequence(terminalHandler, Arrays.copyOfRange(keys, 1, keys.length));
+                TerminalKeyEvent event = parseEscapeSequence(Arrays.copyOfRange(keys, 1, keys.length));
                 if (event != null)
-                    return new TerminalKeyEvent(terminalHandler, event.getUtf8Chars(), event.getKeyType(), event.getTerminalKey(), TerminalKey.TK_MODIFIER_ALT);
+                    return new TerminalKeyEvent(event.getUtf8Chars(), event.getKeyType(), event.getTerminalKey(), TerminalKey.TK_MODIFIER_ALT);
 
-                return new TerminalKeyEvent(terminalHandler, keys);
+                return new TerminalKeyEvent(keys);
             }
 
             /* ---------------------
              * try to parse escape sequence
              * ---------------------
              */
-            TerminalKeyEvent event = parseEscapeSequence(terminalHandler, keys);
+            TerminalKeyEvent event = parseEscapeSequence(keys);
             if (event != null)
                 return event;
 
@@ -60,7 +58,7 @@ public class TerminalKeyParser {
              * probably alt + utf-8 sequence
              * ---------------------
              */
-            return new TerminalKeyEvent(terminalHandler, Arrays.copyOfRange(keys, 1, keys.length), TerminalKeyType.TKT_UNICODE, TerminalKey.TK_UNKNOWN, TerminalKey.TK_MODIFIER_ALT);
+            return new TerminalKeyEvent(Arrays.copyOfRange(keys, 1, keys.length), TerminalKeyType.TKT_UNICODE, TerminalKey.TK_UNKNOWN, TerminalKey.TK_MODIFIER_ALT);
         } else {
             /* ---------------------
              * probably utf-8 sequence
@@ -68,11 +66,11 @@ public class TerminalKeyParser {
              */
             String tmpStr = new String(keys, StandardCharsets.UTF_8);
             int utf8CharCount = tmpStr.codePointCount(0, tmpStr.length());
-            return new TerminalKeyEvent(terminalHandler, keys, utf8CharCount <= 1 ? TerminalKeyType.TKT_UNICODE : TerminalKeyType.TKT_UNICODE_STRING);
+            return new TerminalKeyEvent(keys, utf8CharCount <= 1 ? TerminalKeyType.TKT_UNICODE : TerminalKeyType.TKT_UNICODE_STRING);
         }
     }
 
-    private TerminalKeyEvent parseSingleTerminalKeyInput(TerminalHandler terminalHandler, byte key) {
+    private TerminalKeyEvent parseSingleTerminalKeyInput(byte key) {
         switch (key) {
             /* ---------------------
              * ascii control chars
@@ -125,7 +123,7 @@ public class TerminalKeyParser {
              * ---------------------
              */
             case TerminalKey.TK_BACKSPACE:
-                return new TerminalKeyEvent(terminalHandler, new byte[]{key}, TerminalKeyType.TKT_SPECIAL_KEY, key);
+                return new TerminalKeyEvent(new byte[]{key}, TerminalKeyType.TKT_SPECIAL_KEY, key);
 
             /* ---------------------
              * ascii special chars
@@ -256,7 +254,7 @@ public class TerminalKeyParser {
             case TerminalKey.TK_PIPE:
             case TerminalKey.TK_RIGHT_CURLY_BRACE:
             case TerminalKey.TK_TILDE:
-                return new TerminalKeyEvent(terminalHandler, new byte[]{key}, TerminalKeyType.TKT_ASCII, key);
+                return new TerminalKeyEvent(new byte[]{key}, TerminalKeyType.TKT_ASCII, key);
 
             /* ---------------------
              * unknown / undefined char
@@ -267,11 +265,11 @@ public class TerminalKeyParser {
                 // https://stackoverflow.com/questions/57131654/using-utf-8-encoding-chcp-65001-in-command-prompt-windows-powershell-window
                 // or you have to use this return statement instead:
                 // return new TerminalKeyEvent(keys, TerminalKeyType.TKT_ASCII, keys[0]);
-                return new TerminalKeyEvent(terminalHandler, new byte[]{key}, TerminalKeyType.TKT_UNKNOWN, TerminalKey.TK_UNKNOWN);
+                return new TerminalKeyEvent(new byte[]{key}, TerminalKeyType.TKT_UNKNOWN, TerminalKey.TK_UNKNOWN);
         }
     }
 
-    private TerminalKeyEvent parseEscapeSequence(TerminalHandler terminalHandler, byte[] keys) {
+    private TerminalKeyEvent parseEscapeSequence(byte[] keys) {
 
         if (keys[1] == '[') {
             if (keys.length == 3) {
@@ -281,17 +279,17 @@ public class TerminalKeyParser {
                      * ---------------------
                      */
                     case 'A':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_UP);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_UP);
                     case 'B':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_DOWN);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_DOWN);
                     case 'C':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_RIGHT);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_RIGHT);
                     case 'D':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_LEFT);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_LEFT);
                     case 'H':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_POS1);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_POS1);
                     case 'F':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_END);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_END);
                 }
             } else if (keys.length == 4 && keys[3] == '~') {
                 switch (keys[2]) {
@@ -300,13 +298,13 @@ public class TerminalKeyParser {
                      * ---------------------
                      */
                     case '2':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_INSERT);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_INSERT);
                     case '3':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_DELETE);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_DELETE);
                     case '5':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_PAGE_UP);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_PAGE_UP);
                     case '6':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_PAGE_DOWN);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_PAGE_DOWN);
                 }
             } else if (keys.length == 5 && keys[4] == '~') {
                 /* ---------------------
@@ -316,24 +314,24 @@ public class TerminalKeyParser {
                 if (keys[2] == '1') {
                     switch (keys[3]) {
                         case '5':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F5);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F5);
                         case '7':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F6);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F6);
                         case '8':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F7);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F7);
                         case '9':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F8);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F8);
                     }
                 } else if (keys[2] == '2') {
                     switch (keys[3]) {
                         case '0':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F9);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F9);
                         case '1':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F10);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F10);
                         case '3':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F11);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F11);
                         case '4':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F12);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F12);
                     }
                 }
             } else if (keys.length == 6 && keys[3] == ';') {
@@ -345,35 +343,35 @@ public class TerminalKeyParser {
                          * ---------------------
                          */
                         case 'A':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_UP, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_UP, modifier);
                         case 'B':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_DOWN, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_DOWN, modifier);
                         case 'C':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_RIGHT, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_RIGHT, modifier);
                         case 'D':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_LEFT, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_LEFT, modifier);
 
                         /* ---------------------
                          * pos1 and end keys
                          * ---------------------
                          */
                         case 'H':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_POS1, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_POS1, modifier);
                         case 'F':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_END, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_END, modifier);
 
                         /* ---------------------
                          * F1, F2, F3, F4
                          * ---------------------
                          */
                         case 'P':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F1, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F1, modifier);
                         case 'Q':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F2, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F2, modifier);
                         case 'R':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F3, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F3, modifier);
                         case 'S':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F4, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F4, modifier);
                     }
                 } else if (keys[5] == '~') {
                     switch (keys[2]) {
@@ -382,13 +380,13 @@ public class TerminalKeyParser {
                          * ---------------------
                          */
                         case '2':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_INSERT, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_INSERT, modifier);
                         case '3':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_DELETE, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_DELETE, modifier);
                         case '5':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_PAGE_UP, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_PAGE_UP, modifier);
                         case '6':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_PAGE_DOWN, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_PAGE_DOWN, modifier);
                     }
                 }
             } else if (keys.length == 7 && keys[4] == ';' && keys[6] == '~') {
@@ -401,13 +399,13 @@ public class TerminalKeyParser {
                          * ---------------------
                          */
                         case '5':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F5, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F5, modifier);
                         case '7':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F6, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F6, modifier);
                         case '8':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F7, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F7, modifier);
                         case '9':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F8, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F8, modifier);
                     }
                 } else if (keys[2] == '2') {
                     switch (keys[3]) {
@@ -416,13 +414,13 @@ public class TerminalKeyParser {
                          * ---------------------
                          */
                         case '0':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F9, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F9, modifier);
                         case '1':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F10, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F10, modifier);
                         case '3':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F11, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F11, modifier);
                         case '4':
-                            return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F12, modifier);
+                            return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F12, modifier);
                     }
                 }
             }
@@ -434,30 +432,30 @@ public class TerminalKeyParser {
                      * ---------------------
                      */
                     case 'A':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_UP);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_UP);
                     case 'B':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_DOWN);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_DOWN);
                     case 'C':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_RIGHT);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_RIGHT);
                     case 'D':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_LEFT);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_LEFT);
                     case 'H':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_POS1);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_POS1);
                     case 'F':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_END);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_END);
 
                     /* ---------------------
                      * F1, F2, F3, F4
                      * ---------------------
                      */
                     case 'P':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F1);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F1);
                     case 'Q':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F2);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F2);
                     case 'R':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F3);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F3);
                     case 'S':
-                        return new TerminalKeyEvent(terminalHandler, keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F4);
+                        return new TerminalKeyEvent(keys, TerminalKeyType.TKT_SPECIAL_KEY, TerminalKey.TK_F4);
                 }
             }
         }

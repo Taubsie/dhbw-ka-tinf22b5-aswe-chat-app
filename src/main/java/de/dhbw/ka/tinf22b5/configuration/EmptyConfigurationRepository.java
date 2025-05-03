@@ -15,10 +15,6 @@ public class EmptyConfigurationRepository implements ConfigurationRepository {
     }
 
     @Override
-    public void loadConfiguration() {
-    }
-
-    @Override
     public void setConfigurationValue(ConfigurationKey key, String value) {
     }
 
@@ -28,9 +24,5 @@ public class EmptyConfigurationRepository implements ConfigurationRepository {
 
     @Override
     public void removeConfigurationValue(ConfigurationKey key) {
-    }
-
-    @Override
-    public void saveConfiguration() {
     }
 }
