@@ -24,6 +24,10 @@ public class TextInputRenderable extends TerminalRenderable implements Interacta
         return text.toString();
     }
 
+    public void clearText() {
+        text.setLength(0);
+    }
+
     public boolean handleInput(TerminalKeyEvent event) {
         if (!holdsFocus)
             return false;
