@@ -105,6 +105,7 @@ public class BaseTerminalHandler implements TerminalHandler {
         }
     }
 
+    @Override
     public synchronized void updateTerminal() throws IOException {
         Dimension terminalSize = this.ioTerminalHandler.getSize();
 

@@ -11,5 +11,7 @@ public interface TerminalHandler {
     void pushDialog(Dialog dialog) throws IOException;
     void popDialog() throws IOException;
 
+    void updateTerminal() throws IOException;
+
     void quit();
 }
