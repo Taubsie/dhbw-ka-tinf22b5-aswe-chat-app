@@ -235,14 +235,16 @@ public class UDPBroadcastUtil implements BroadcastUtil {
             this.multicastSocket.receive(packet);
 
             ReceivingBroadcastPacket receivingBroadcastPacket;
+            byte[] rawData = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
+
             try {
-                String data = new String(Arrays.copyOfRange(packet.getData(), 0, packet.getLength()), StandardCharsets.UTF_8);
+                String data = new String(rawData, StandardCharsets.UTF_8);
 
                 WelcomeData welcomeData = GsonUtil.getGson().fromJson(data, WelcomeData.class);
 
                 receivingBroadcastPacket = new ReceivingWelcomePacket(welcomeData, packet.getAddress());
             } catch (JsonSyntaxException e) {
-                receivingBroadcastPacket = new RawReceivedBroadcastPacket(Arrays.copyOfRange(packet.getData(), 0, packet.getLength()), packet.getAddress());
+                receivingBroadcastPacket = new RawReceivedBroadcastPacket(rawData, packet.getAddress());
             }
 
             return Optional.of(receivingBroadcastPacket);
@@ -272,7 +274,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
             util.addBroadcastListener(p -> System.out.printf("%s: %s: %s\r\n", Thread.currentThread().getName(), p.getRemoteAddress(), new String(p.getData())));
 
             try {
-                Thread.sleep(5000);
+                Thread.sleep(60000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

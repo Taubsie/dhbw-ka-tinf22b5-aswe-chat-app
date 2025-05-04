@@ -43,6 +43,8 @@ public class ChatDialog extends Dialog {
     private final List<Chat> chats;
     int currentChatId = -1;
 
+    private final User myself;
+
     private Interactable currentlyFocused;
 
     public ChatDialog() {
@@ -70,6 +72,8 @@ public class ChatDialog extends Dialog {
         panel.addComponent(new BorderRenderable(textInput, BorderRenderable.BorderStyle.DASHED, 1,
                 BorderRenderable.BORDER_TOP | BorderRenderable.BORDER_BOTTOM | BorderRenderable.BORDER_LEFT | BorderRenderable.BORDER_RIGHT));
         this.addComponent(new BorderRenderable(panel, BorderRenderable.BorderStyle.DASHED, 1, BorderRenderable.BORDER_LEFT));
+
+        myself = new User(configurationRepository.getConfigurationValue(ConfigurationKey.USERNAME).orElseThrow(() -> new RuntimeException("Please select a username first.")));
 
         chats = new ArrayList<>();
 
@@ -113,6 +117,8 @@ public class ChatDialog extends Dialog {
                 chats.add(new Chat(user));
 
                 updateChatUI();
+
+                tcpp2PUtil.sendP2PPacket(new WelcomeP2PPacket(new Chat(myself), address));
             }
         });
 
