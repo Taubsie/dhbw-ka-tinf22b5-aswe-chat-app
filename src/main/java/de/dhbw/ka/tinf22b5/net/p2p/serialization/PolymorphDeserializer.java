@@ -18,7 +18,7 @@ public class PolymorphDeserializer<T> implements JsonDeserializer<T> {
                 throw new JsonParseException("Failed to deserialize json due to a missing annotation");
             }
 
-            String property = json.getAsJsonObject().getAsJsonObject(jsonType.property()).getAsString();
+            String property = json.getAsJsonObject().getAsJsonPrimitive(jsonType.property()).getAsString();
             JsonSubtype[] subtypes = jsonType.subtypes();
             Class<?> subtype = Arrays.stream(subtypes)
                     .filter(subtype1 -> subtype1.name().equals(property)).findFirst()
