@@ -173,14 +173,12 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         Thread listenerThread = new Thread(() -> {
 
             Optional<DatagramPacket> receivedPacket;
-            RawReceivedBroadcastPacket rawPacket;
             DatagramPacket packet;
             while (!shouldStop.get()) {
                 receivedPacket = receiveBroadcastPacket();
 
                 if (receivedPacket.isPresent()) {
                     packet = receivedPacket.get();
-                    rawPacket = new RawReceivedBroadcastPacket(Arrays.copyOfRange(packet.getData(), 8, packet.getLength()), packet.getAddress());
 
                     long senderPID = arrayToLong(packet.getData());
                     long ownPID = ProcessHandle.current().pid();
@@ -188,13 +186,26 @@ public class UDPBroadcastUtil implements BroadcastUtil {
                     if (addressIsLocalAddress(packet.getAddress()) && senderPID == ownPID)
                         continue;
 
+                    ReceivingBroadcastPacket receivingBroadcastPacket;
+                    byte[] rawData = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
+
+                    try {
+                        String data = new String(rawData, StandardCharsets.UTF_8);
+
+                        WelcomeData welcomeData = GsonUtil.getGson().fromJson(data, WelcomeData.class);
+
+                        receivingBroadcastPacket = new ReceivingWelcomePacket(welcomeData, packet.getAddress());
+                    } catch (JsonSyntaxException e) {
+                        receivingBroadcastPacket = new RawReceivedBroadcastPacket(rawData, packet.getAddress());
+                    }
+
                     Set<BroadcastPacketListener> listeners;
                     synchronized (broadcastPacketListeners) {
                         listeners = new HashSet<>(broadcastPacketListeners);
                     }
 
                     for (BroadcastPacketListener listener : listeners) {
-                        listener.packetReceived(rawPacket);
+                        listener.packetReceived(receivingBroadcastPacket);
                     }
                 }
             }
@@ -282,7 +293,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         }
     }
 
-    private Optional<ReceivingBroadcastPacket> receiveBroadcastPacket() {
+    private Optional<DatagramPacket> receiveBroadcastPacket() {
         if (!running.get()) {
             return Optional.empty();
         }
@@ -293,20 +304,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         try {
             this.multicastSocket.receive(packet);
 
-            ReceivingBroadcastPacket receivingBroadcastPacket;
-            byte[] rawData = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
-
-            try {
-                String data = new String(rawData, StandardCharsets.UTF_8);
-
-                WelcomeData welcomeData = GsonUtil.getGson().fromJson(data, WelcomeData.class);
-
-                receivingBroadcastPacket = new ReceivingWelcomePacket(welcomeData, packet.getAddress());
-            } catch (JsonSyntaxException e) {
-                receivingBroadcastPacket = new RawReceivedBroadcastPacket(rawData, packet.getAddress());
-            }
-
-            return Optional.of(receivingBroadcastPacket);
+            return Optional.of(packet);
         } catch (IOException e) {
             return Optional.empty();
         }
