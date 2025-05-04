@@ -190,26 +190,6 @@ public class LinuxTerminalHandler extends IOTerminalHandler {
     }
 
     @Override
-    public byte[] getChar() {
-        byte[] buffer = new byte[BUFFER_SIZE];
-
-        int numRead = 0;
-        try {
-            numRead = System.in.read(buffer);
-        } catch (IOException e) {
-            return new byte[0];
-        }
-
-        // probably eof signal or kill
-        if(numRead <= -1)
-            return new byte[0];
-
-        byte[] ret = new byte[numRead];
-        System.arraycopy(buffer, 0, ret, 0, numRead);
-        return ret;
-    }
-
-    @Override
     public Dimension getSize() {
         try (Arena arena = Arena.ofConfined()) {
             MemorySegment sizeStruct = arena.allocate(MAX_TERMIOS_SIZE);

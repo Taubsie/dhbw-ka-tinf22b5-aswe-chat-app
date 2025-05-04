@@ -12,7 +12,11 @@ public class Chat extends ChatRelatedJson {
         this.messages = new LinkedList<>();
     }
 
+    public void addMessage(Message message) {
+        messages.addFirst(message);
+    }
+
     public List<Message> getMessages() {
-        return messages;
+        return new LinkedList<>(messages);
     }
 }
