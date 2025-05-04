@@ -29,7 +29,7 @@ public class WelcomeDialog extends Dialog {
                 terminal.pushDialog(new ConfigDialog());
                 return true;
             case TerminalKey.TK_E, TerminalKey.TK_e:
-                terminal.pushDialog(new ChatDialog());
+                terminal.pushDialog(new ChatDialog(terminal));
                 return true;
         }
 

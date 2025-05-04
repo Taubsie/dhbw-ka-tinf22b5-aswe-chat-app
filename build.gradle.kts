@@ -18,6 +18,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains:annotations:26.0.2")
+    implementation("com.google.code.gson:gson:2.13.1")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation(kotlin("test"))
@@ -29,6 +30,10 @@ testing {
             useJUnitJupiter()
         }
     }
+}
+
+jacoco {
+    toolVersion = "0.8.13"
 }
 
 java {

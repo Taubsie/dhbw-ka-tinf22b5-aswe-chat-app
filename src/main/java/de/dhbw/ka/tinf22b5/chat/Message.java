@@ -3,13 +3,14 @@ package de.dhbw.ka.tinf22b5.chat;
 import java.util.Calendar;
 import java.util.Objects;
 
-public class Message {
+public class Message extends ChatRelatedJson {
 
     private final String message;
     private final Calendar date;
     private final boolean isRemoteMessage;
 
-    public Message(String message, Calendar date, boolean isRemoteMessage) {
+    public Message(User sender, String message, Calendar date, boolean isRemoteMessage) {
+        super("message", sender);
         this.message = message;
         this.date = date;
         this.isRemoteMessage = isRemoteMessage;
