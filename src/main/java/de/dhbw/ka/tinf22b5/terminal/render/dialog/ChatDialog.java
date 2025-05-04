@@ -24,11 +24,12 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 
 public class ChatDialog extends Dialog {
+
+    private final TerminalHandler terminalHandler;
 
     private final ListRenderable<ConstSingleLineStringRenderable> userList;
     private final ListRenderable<BorderRenderable> chatList;
@@ -47,7 +48,9 @@ public class ChatDialog extends Dialog {
 
     private Interactable currentlyFocused;
 
-    public ChatDialog() {
+    public ChatDialog(TerminalHandler terminalHandler) {
+        this.terminalHandler = terminalHandler;
+
         this.configurationRepository = new FileConfigurationRepository();
         this.tcpp2PUtil = new TCPP2PUtil(configurationRepository);
         tcpp2PUtil.attachShutdownHook();
@@ -87,7 +90,7 @@ public class ChatDialog extends Dialog {
 
                 chat.ifPresent(value -> value.getMessages().addFirst(message));
 
-                updateChatUI();
+                updateTerminal();
             }
 
             if(packet instanceof WelcomeP2PPacket welcomePacket) {
@@ -102,7 +105,7 @@ public class ChatDialog extends Dialog {
 
                 chats.add(new Chat(user));
 
-                updateChatUI();
+                updateTerminal();
             }
         });
 
@@ -116,7 +119,7 @@ public class ChatDialog extends Dialog {
 
                 chats.add(new Chat(user));
 
-                updateChatUI();
+                updateTerminal();
 
                 tcpp2PUtil.sendP2PPacket(new WelcomeP2PPacket(new Chat(myself), address));
             }
@@ -127,6 +130,16 @@ public class ChatDialog extends Dialog {
         );
 
         updateChatUI();
+    }
+
+    private void updateTerminal() {
+        updateChatUI();
+
+        try {
+            terminalHandler.updateTerminal();
+        } catch (IOException ignored) {
+
+        }
     }
 
     public void updateChatUI() {
