@@ -8,7 +8,7 @@ public class Chat extends ChatRelatedJson {
     private final List<Message> messages;
 
     public Chat(User remote) {
-        super(remote);
+        super("chat", remote);
         this.messages = new LinkedList<>();
     }
 

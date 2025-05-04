@@ -7,11 +7,11 @@ import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.FileConfigurationRepository;
 import de.dhbw.ka.tinf22b5.net.broadcast.UDPBroadcastUtil;
-import de.dhbw.ka.tinf22b5.net.broadcast.packets.RawReceivedBroadcastPacket;
-import de.dhbw.ka.tinf22b5.net.broadcast.packets.SendingBroadcastPacket;
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.ReceivingWelcomePacket;
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.data.WelcomeData;
 import de.dhbw.ka.tinf22b5.net.p2p.TCPP2PUtil;
-import de.dhbw.ka.tinf22b5.net.p2p.packets.ChatRelatedJsonP2PPacket;
 import de.dhbw.ka.tinf22b5.net.p2p.packets.MessageSendP2PPacket;
+import de.dhbw.ka.tinf22b5.net.p2p.packets.WelcomeP2PPacket;
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
@@ -21,11 +21,11 @@ import de.dhbw.ka.tinf22b5.terminal.render.layout.VerticalSplitLayout;
 
 import java.awt.*;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 
 public class ChatDialog extends Dialog {
 
@@ -37,6 +37,8 @@ public class ChatDialog extends Dialog {
     private final TCPP2PUtil tcpp2PUtil;
     private final UDPBroadcastUtil udpBroadcastUtil;
 
+    private final Map<User, SocketAddress> userAddress = new HashMap<>();
+
     private final List<Chat> chats;
     int currentChatId = -1;
 
@@ -45,7 +47,12 @@ public class ChatDialog extends Dialog {
     public ChatDialog() {
         this.configurationRepository = new FileConfigurationRepository();
         this.tcpp2PUtil = new TCPP2PUtil(configurationRepository);
+        tcpp2PUtil.attachShutdownHook();
+        tcpp2PUtil.open();
+
         this.udpBroadcastUtil = new UDPBroadcastUtil(configurationRepository);
+        udpBroadcastUtil.attachShutdownHook();
+        udpBroadcastUtil.open();
 
         this.layoutManager = new VerticalSplitLayout(0.3f);
 
@@ -65,24 +72,46 @@ public class ChatDialog extends Dialog {
 
         chats = new ArrayList<>();
 
-        //TODO add listener for tcp ping response
-        //TODO (add listener for udp received)
-
-        //TODO send udp ping
+        //TODO load chats from storage?
 
         tcpp2PUtil.addP2PListener(packet -> {
             if(packet instanceof MessageSendP2PPacket messagePacket) {
-                Message message = messagePacket.fromJson();
+                Message message = messagePacket.getJsonData();
 
                 Optional<Chat> chat = chats.stream().filter(it -> it.getSender().getName().equals(message.getSender().getName())).findFirst();
 
-                chat.ifPresent(value -> value.getMessages().add(message));
+                chat.ifPresent(value -> value.getMessages().addFirst(message));
+
+                updateChatUI();
+            }
+
+            if(packet instanceof WelcomeP2PPacket welcomePacket) {
+                //TODO do sth with the messages list?
+                Chat chat = welcomePacket.getJsonData();
+
+                User user = chat.getSender();
+
+                SocketAddress address = packet.getRemoteAddress();
+
+                userAddress.put(user, address);
+
+                chats.add(new Chat(user));
+
+                updateChatUI();
             }
         });
 
         udpBroadcastUtil.addBroadcastListener(packet -> {
-            if(packet instanceof RawReceivedBroadcastPacket) {
-                chats.add(new Chat(new User(new String(packet.getData(), StandardCharsets.UTF_8))));
+            if(packet instanceof ReceivingWelcomePacket welcomePacket) {
+                User user = new User(welcomePacket.getWelcomeData().getUsername());
+
+                SocketAddress address = new InetSocketAddress(packet.getRemoteAddress(), welcomePacket.getWelcomeData().getPort());
+
+                userAddress.put(user, address);
+
+                chats.add(new Chat(user));
+
+                updateChatUI();
             }
         });
 
@@ -161,8 +190,13 @@ public class ChatDialog extends Dialog {
         if(chats.isEmpty())
             return;
 
-        // TODO: Networking
-        chats.get(userList.getSelectedIdx()).getMessages().add(0, new Message(new User("Me"), textInput.getText(), Calendar.getInstance(), false));
+        Message message = new Message(new User("Me"), textInput.getText(), Calendar.getInstance(), false);
+
+        chats.get(userList.getSelectedIdx()).getMessages().addFirst(message);
+
+        Optional<SocketAddress> address = userAddress.entrySet().stream().filter(it -> it.getKey() == chats.get(userList.getSelectedIdx()).getSender()).findFirst().map(Map.Entry::getValue);
+
+        address.ifPresent(socketAddress -> tcpp2PUtil.sendP2PPacket(new MessageSendP2PPacket(message, socketAddress)));
 
         textInput.clearText();
         updateChatUI();

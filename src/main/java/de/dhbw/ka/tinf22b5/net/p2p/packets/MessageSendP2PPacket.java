@@ -6,7 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import java.net.SocketAddress;
 
 public class MessageSendP2PPacket extends JsonP2PPacket<Message> {
+    public static final String TYPE = "message";
+
     public MessageSendP2PPacket(@NotNull Message data, SocketAddress address) {
-        super(Message.class, data, address);
+        super(TYPE, data, address);
     }
 }

@@ -10,7 +10,7 @@ public class Message extends ChatRelatedJson {
     private final boolean isRemoteMessage;
 
     public Message(User sender, String message, Calendar date, boolean isRemoteMessage) {
-        super(sender);
+        super("message", sender);
         this.message = message;
         this.date = date;
         this.isRemoteMessage = isRemoteMessage;

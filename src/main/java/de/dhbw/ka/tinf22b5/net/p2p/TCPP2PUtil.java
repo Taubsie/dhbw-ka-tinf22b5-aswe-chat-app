@@ -1,18 +1,26 @@
 package de.dhbw.ka.tinf22b5.net.p2p;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
+import de.dhbw.ka.tinf22b5.chat.ChatRelatedJson;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.EmptyConfigurationRepository;
 import de.dhbw.ka.tinf22b5.net.broadcast.BroadcastUtil;
 import de.dhbw.ka.tinf22b5.net.broadcast.UDPBroadcastUtil;
+import de.dhbw.ka.tinf22b5.net.p2p.packets.JsonP2PPacket;
 import de.dhbw.ka.tinf22b5.net.p2p.packets.P2PPacket;
 import de.dhbw.ka.tinf22b5.net.p2p.packets.RawP2PPacket;
+import de.dhbw.ka.tinf22b5.util.GsonUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -148,7 +156,22 @@ public class TCPP2PUtil implements P2PUtil {
             socket.connect(p2PPacket.getRemoteAddress(), SOCKET_TIMEOUT);
 
             socket.getOutputStream().write(port2Array(this.port));
-            socket.getOutputStream().write(p2PPacket.getData());
+
+            if(p2PPacket instanceof JsonP2PPacket<?> jsonP2PPacket) {
+                JsonPrimitive type = new JsonPrimitive(jsonP2PPacket.getType());
+
+                JsonElement data = GsonUtil.getGson().toJsonTree(jsonP2PPacket.getJsonData());
+
+                JsonObject result = new JsonObject();
+
+                result.add("type", type);
+                result.add("data", data);
+
+                socket.getOutputStream().write(GsonUtil.getGson().toJson(result).getBytes(StandardCharsets.UTF_8));
+            } else {
+                socket.getOutputStream().write(p2PPacket.getData());
+            }
+
             socket.getOutputStream().flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -170,7 +193,20 @@ public class TCPP2PUtil implements P2PUtil {
 
             byte[] sendBuffer = client.getInputStream().readAllBytes();
 
-            return Optional.of(new RawP2PPacket(sendBuffer, new InetSocketAddress(remoteAddress, remotePort)));
+            String json = new String(sendBuffer, StandardCharsets.UTF_8);
+
+            try {
+                JsonObject jsonObject = GsonUtil.getGson().fromJson(json, JsonObject.class);
+                if(!jsonObject.has("type")) {
+                    throw new JsonSyntaxException("Missing type field");
+                }
+
+                String packetType = jsonObject.getAsJsonPrimitive("type").getAsString();
+
+                return P2PPacketParser.parse(packetType, jsonObject.getAsJsonObject("data"), new InetSocketAddress(remoteAddress, remotePort));
+            } catch (JsonSyntaxException e) {
+                return Optional.of(new RawP2PPacket(sendBuffer, new InetSocketAddress(remoteAddress, remotePort)));
+            }
         } catch (IOException e) {
             return Optional.empty();
         }
