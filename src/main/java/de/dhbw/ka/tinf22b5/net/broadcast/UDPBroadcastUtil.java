@@ -249,7 +249,6 @@ public class UDPBroadcastUtil implements BroadcastUtil {
 
             return Optional.of(receivingBroadcastPacket);
         } catch (IOException e) {
-            e.printStackTrace();
             return Optional.empty();
         }
     }
