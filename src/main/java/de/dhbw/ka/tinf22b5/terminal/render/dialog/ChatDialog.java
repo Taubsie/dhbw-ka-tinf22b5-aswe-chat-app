@@ -203,7 +203,7 @@ public class ChatDialog extends Dialog {
 
         chats.get(userList.getSelectedIdx()).getMessages().addFirst(message);
 
-        Optional<SocketAddress> address = userAddress.entrySet().stream().filter(it -> it.getKey() == chats.get(userList.getSelectedIdx()).getSender()).findFirst().map(Map.Entry::getValue);
+        Optional<SocketAddress> address = userAddress.entrySet().stream().filter(it -> it.getKey().equals(chats.get(userList.getSelectedIdx()).getSender())).findFirst().map(Map.Entry::getValue);
 
         address.ifPresent(socketAddress -> tcpp2PUtil.sendP2PPacket(new MessageSendP2PPacket(message, socketAddress)));
 
