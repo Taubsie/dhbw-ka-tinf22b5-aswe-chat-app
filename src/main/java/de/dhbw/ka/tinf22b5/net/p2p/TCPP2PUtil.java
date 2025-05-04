@@ -3,7 +3,6 @@ package de.dhbw.ka.tinf22b5.net.p2p;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.EmptyConfigurationRepository;
-import de.dhbw.ka.tinf22b5.configuration.InMemoryConfigurationRepository;
 import de.dhbw.ka.tinf22b5.net.broadcast.BroadcastUtil;
 import de.dhbw.ka.tinf22b5.net.broadcast.UDPBroadcastUtil;
 import de.dhbw.ka.tinf22b5.net.p2p.packets.P2PPacket;

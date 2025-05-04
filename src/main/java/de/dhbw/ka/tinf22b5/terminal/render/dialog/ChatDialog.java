@@ -3,6 +3,15 @@ package de.dhbw.ka.tinf22b5.terminal.render.dialog;
 import de.dhbw.ka.tinf22b5.chat.Chat;
 import de.dhbw.ka.tinf22b5.chat.Message;
 import de.dhbw.ka.tinf22b5.chat.User;
+import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
+import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
+import de.dhbw.ka.tinf22b5.configuration.FileConfigurationRepository;
+import de.dhbw.ka.tinf22b5.net.broadcast.UDPBroadcastUtil;
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.RawReceivedBroadcastPacket;
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.SendingBroadcastPacket;
+import de.dhbw.ka.tinf22b5.net.p2p.TCPP2PUtil;
+import de.dhbw.ka.tinf22b5.net.p2p.packets.ChatRelatedJsonP2PPacket;
+import de.dhbw.ka.tinf22b5.net.p2p.packets.MessageSendP2PPacket;
 import de.dhbw.ka.tinf22b5.terminal.handler.TerminalHandler;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKey;
 import de.dhbw.ka.tinf22b5.terminal.key.TerminalKeyEvent;
@@ -12,9 +21,11 @@ import de.dhbw.ka.tinf22b5.terminal.render.layout.VerticalSplitLayout;
 
 import java.awt.*;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 public class ChatDialog extends Dialog {
 
@@ -22,12 +33,20 @@ public class ChatDialog extends Dialog {
     private final ListRenderable<BorderRenderable> chatList;
     private final TextInputRenderable textInput;
 
+    private final ConfigurationRepository configurationRepository;
+    private final TCPP2PUtil tcpp2PUtil;
+    private final UDPBroadcastUtil udpBroadcastUtil;
+
     private final List<Chat> chats;
     int currentChatId = -1;
 
     private Interactable currentlyFocused;
 
     public ChatDialog() {
+        this.configurationRepository = new FileConfigurationRepository();
+        this.tcpp2PUtil = new TCPP2PUtil(configurationRepository);
+        this.udpBroadcastUtil = new UDPBroadcastUtil(configurationRepository);
+
         this.layoutManager = new VerticalSplitLayout(0.3f);
 
         this.userList = new ListRenderable<>();
@@ -45,19 +64,30 @@ public class ChatDialog extends Dialog {
         this.addComponent(new BorderRenderable(panel, BorderRenderable.BorderStyle.DASHED, 1, BorderRenderable.BORDER_LEFT));
 
         chats = new ArrayList<>();
-        Chat c1 = new Chat(new User("Test1"));
-        chats.add(c1);
-        c1.getMessages().add(0, new Message("Message1", Calendar.getInstance(), true));
-        c1.getMessages().add(0, new Message("Message2", Calendar.getInstance(), false));
-        c1.getMessages().add(0, new Message("Message3", Calendar.getInstance(), false));
-        c1.getMessages().add(0, new Message("Message4", Calendar.getInstance(), true));
 
-        Chat c2 = new Chat(new User("Test2"));
-        chats.add(c2);
-        c2.getMessages().add(0, new Message("Message1", Calendar.getInstance(), false));
-        c2.getMessages().add(0, new Message("Message2", Calendar.getInstance(), false));
-        c2.getMessages().add(0, new Message("Message3", Calendar.getInstance(), false));
-        c2.getMessages().add(0, new Message("Message4", Calendar.getInstance(), true));
+        //TODO add listener for tcp ping response
+        //TODO (add listener for udp received)
+
+        //TODO send udp ping
+
+        tcpp2PUtil.addP2PListener(packet -> {
+            if(packet instanceof MessageSendP2PPacket messagePacket) {
+                Message message = messagePacket.fromJson();
+
+                Optional<Chat> chat = chats.stream().filter(it -> it.getSender().getName().equals(message.getSender().getName())).findFirst();
+
+                chat.ifPresent(value -> value.getMessages().add(message));
+            }
+        });
+
+        udpBroadcastUtil.addBroadcastListener(packet -> {
+            if(packet instanceof RawReceivedBroadcastPacket) {
+                chats.add(new Chat(new User(new String(packet.getData(), StandardCharsets.UTF_8))));
+            }
+        });
+
+        udpBroadcastUtil.sendBroadcastPacket(() -> configurationRepository.getConfigurationValue(ConfigurationKey.USERNAME).map(it -> it.getBytes(StandardCharsets.UTF_8)).orElseThrow(() -> new RuntimeException("Please select a username first.")));
+
         updateChatUI();
     }
 
@@ -68,7 +98,7 @@ public class ChatDialog extends Dialog {
         userList.setSelectedIdx(userSelectedIdx);
 
         for (Chat chat : chats) {
-            userList.addItem(new ConstSingleLineStringRenderable(chat.getRemoteUser().getName()));
+            userList.addItem(new ConstSingleLineStringRenderable(chat.getSender().getName()));
         }
 
 
@@ -85,7 +115,7 @@ public class ChatDialog extends Dialog {
             int borderModifiers = message.isRemoteMessage() ? BorderRenderable.BORDER_RIGHT : BorderRenderable.BORDER_LEFT;
             borderModifiers |= BorderRenderable.BORDER_BOTTOM;
 
-            String str = message.isRemoteMessage() ? chat.getRemoteUser().getName() : "Me";
+            String str = message.isRemoteMessage() ? chat.getSender().getName() : "Me";
             str += ": " + message.getMessage();
 
             chatList.addItem(new BorderRenderable(new ConstSingleLineStringRenderable(str), BorderRenderable.BorderStyle.DASHED, 1, borderModifiers));
@@ -128,8 +158,11 @@ public class ChatDialog extends Dialog {
         if (textInput.getText().isBlank())
             return;
 
+        if(chats.isEmpty())
+            return;
+
         // TODO: Networking
-        chats.get(userList.getSelectedIdx()).getMessages().add(0, new Message(textInput.getText(), Calendar.getInstance(), false));
+        chats.get(userList.getSelectedIdx()).getMessages().add(0, new Message(new User("Me"), textInput.getText(), Calendar.getInstance(), false));
 
         textInput.clearText();
         updateChatUI();
