@@ -7,21 +7,20 @@ import de.dhbw.ka.tinf22b5.terminal.render.characters.TerminalCharacterFactory;
 
 import java.awt.*;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Stack;
 
 public class BaseTerminalScreen implements TerminalScreen {
 
     private int width;
     private int height;
     private TerminalCharacter[] characters;
-    private final Queue<DecoratedCharacterFactory> characterModifiers;
+    private final Stack<DecoratedCharacterFactory> characterModifiers;
 
     private int cursorX;
     private int cursorY;
 
     public BaseTerminalScreen() {
-        characterModifiers = new LinkedList<>();
+        characterModifiers = new Stack<>();
     }
 
     @Override
@@ -74,13 +73,13 @@ public class BaseTerminalScreen implements TerminalScreen {
 
     @Override
     public TerminalScreen pushCharacterModifier(DecoratedCharacterFactory fac) {
-        characterModifiers.add(fac);
+        characterModifiers.push(fac);
         return this;
     }
 
     @Override
     public TerminalScreen popCharacterModifier() {
-        characterModifiers.remove();
+        characterModifiers.pop();
         return this;
     }
 
