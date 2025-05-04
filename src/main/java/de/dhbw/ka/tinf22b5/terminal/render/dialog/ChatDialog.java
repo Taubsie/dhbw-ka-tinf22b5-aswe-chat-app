@@ -8,6 +8,7 @@ import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.FileConfigurationRepository;
 import de.dhbw.ka.tinf22b5.net.broadcast.UDPBroadcastUtil;
 import de.dhbw.ka.tinf22b5.net.broadcast.packets.ReceivingWelcomePacket;
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.SendingWelcomePacket;
 import de.dhbw.ka.tinf22b5.net.broadcast.packets.data.WelcomeData;
 import de.dhbw.ka.tinf22b5.net.p2p.TCPP2PUtil;
 import de.dhbw.ka.tinf22b5.net.p2p.packets.MessageSendP2PPacket;
@@ -115,7 +116,9 @@ public class ChatDialog extends Dialog {
             }
         });
 
-        udpBroadcastUtil.sendBroadcastPacket(() -> configurationRepository.getConfigurationValue(ConfigurationKey.USERNAME).map(it -> it.getBytes(StandardCharsets.UTF_8)).orElseThrow(() -> new RuntimeException("Please select a username first.")));
+        udpBroadcastUtil.sendBroadcastPacket(
+                new SendingWelcomePacket(new WelcomeData(configurationRepository.getConfigurationValue(ConfigurationKey.USERNAME).orElseThrow(() -> new RuntimeException("Please select a username first.")), tcpp2PUtil.getServerPort()))
+        );
 
         updateChatUI();
     }

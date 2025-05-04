@@ -1,15 +1,20 @@
 package de.dhbw.ka.tinf22b5.net.broadcast;
 
+import com.google.gson.JsonSyntaxException;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationKey;
 import de.dhbw.ka.tinf22b5.configuration.ConfigurationRepository;
 import de.dhbw.ka.tinf22b5.configuration.EmptyConfigurationRepository;
 import de.dhbw.ka.tinf22b5.net.broadcast.packets.RawReceivedBroadcastPacket;
 import de.dhbw.ka.tinf22b5.net.broadcast.packets.ReceivingBroadcastPacket;
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.ReceivingWelcomePacket;
 import de.dhbw.ka.tinf22b5.net.broadcast.packets.SendingBroadcastPacket;
+import de.dhbw.ka.tinf22b5.net.broadcast.packets.data.WelcomeData;
+import de.dhbw.ka.tinf22b5.util.GsonUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -229,9 +234,18 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         try {
             this.multicastSocket.receive(packet);
 
-            RawReceivedBroadcastPacket rawPacket =
-                    new RawReceivedBroadcastPacket(Arrays.copyOfRange(packet.getData(), 0, packet.getLength()), packet.getAddress());
-            return Optional.of(rawPacket);
+            ReceivingBroadcastPacket receivingBroadcastPacket;
+            try {
+                String data = new String(Arrays.copyOfRange(packet.getData(), 0, packet.getLength()), StandardCharsets.UTF_8);
+
+                WelcomeData welcomeData = GsonUtil.getGson().fromJson(data, WelcomeData.class);
+
+                receivingBroadcastPacket = new ReceivingWelcomePacket(welcomeData, packet.getAddress());
+            } catch (JsonSyntaxException e) {
+                receivingBroadcastPacket = new RawReceivedBroadcastPacket(Arrays.copyOfRange(packet.getData(), 0, packet.getLength()), packet.getAddress());
+            }
+
+            return Optional.of(receivingBroadcastPacket);
         } catch (IOException e) {
             return Optional.empty();
         }
