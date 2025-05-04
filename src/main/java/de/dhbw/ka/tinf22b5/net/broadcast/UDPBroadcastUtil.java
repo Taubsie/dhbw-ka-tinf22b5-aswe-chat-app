@@ -79,8 +79,8 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         InetAddress multicastAddress;
 
         try {
-                multicastAddress = InetAddress.getByName(configurationRepository.getConfigurationValue(ConfigurationKey.BROADCAST_IP_ADDRESS)
-                        .orElse(DEFAULT_BROADCAST_IP));
+            multicastAddress = InetAddress.getByName(configurationRepository.getConfigurationValue(ConfigurationKey.BROADCAST_IP_ADDRESS)
+                    .orElse(DEFAULT_BROADCAST_IP));
         } catch (UnknownHostException _) {
             // ignoring error, using default
             try {
@@ -249,6 +249,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
 
             return Optional.of(receivingBroadcastPacket);
         } catch (IOException e) {
+            e.printStackTrace();
             return Optional.empty();
         }
     }
