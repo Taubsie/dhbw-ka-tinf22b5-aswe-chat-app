@@ -199,13 +199,15 @@ public class ChatDialog extends Dialog {
         if(chats.isEmpty())
             return;
 
-        Message message = new Message(new User("Me"), textInput.getText(), Calendar.getInstance(), false);
+        Message displayMessage = new Message(new User("Me"), textInput.getText(), Calendar.getInstance(), false);
 
-        chats.get(userList.getSelectedIdx()).getMessages().addFirst(message);
+        chats.get(userList.getSelectedIdx()).getMessages().addFirst(displayMessage);
 
         Optional<SocketAddress> address = userAddress.entrySet().stream().filter(it -> it.getKey().equals(chats.get(userList.getSelectedIdx()).getSender())).findFirst().map(Map.Entry::getValue);
 
-        address.ifPresent(socketAddress -> tcpp2PUtil.sendP2PPacket(new MessageSendP2PPacket(message, socketAddress)));
+        Message sendMessage = new Message(myself, textInput.getText(), Calendar.getInstance(), true);
+
+        address.ifPresent(socketAddress -> tcpp2PUtil.sendP2PPacket(new MessageSendP2PPacket(sendMessage, socketAddress)));
 
         textInput.clearText();
         updateChatUI();
