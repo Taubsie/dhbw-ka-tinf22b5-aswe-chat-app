@@ -100,7 +100,7 @@ public class ChatDialog extends Dialog {
 
                 userAddress.put(user, address);
 
-                chats.add(new Chat(user));
+                addChat(user);
 
                 updateChatUI();
             }
@@ -114,7 +114,7 @@ public class ChatDialog extends Dialog {
 
                 userAddress.put(user, address);
 
-                chats.add(new Chat(user));
+                addChat(user);
 
                 updateChatUI();
 
@@ -127,6 +127,13 @@ public class ChatDialog extends Dialog {
         );
 
         updateChatUI();
+    }
+
+    private void addChat(User user) {
+        if(chats.stream().anyMatch(it -> it.getSender().equals(user)))
+            return;
+
+        chats.add(new Chat(user));
     }
 
     public void updateChatUI() {
