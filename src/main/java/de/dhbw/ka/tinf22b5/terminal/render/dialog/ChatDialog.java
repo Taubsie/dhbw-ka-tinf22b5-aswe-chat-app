@@ -88,7 +88,7 @@ public class ChatDialog extends Dialog {
 
                 Optional<Chat> chat = chats.stream().filter(it -> it.getSender().getName().equals(message.getSender().getName())).findFirst();
 
-                chat.ifPresent(value -> value.getMessages().addFirst(message));
+                chat.ifPresent(value -> value.addMessage(message));
 
                 updateTerminal();
             }
@@ -230,7 +230,7 @@ public class ChatDialog extends Dialog {
 
         Message displayMessage = new Message(new User("Me"), textInput.getText(), Calendar.getInstance(), false);
 
-        chats.get(userList.getSelectedIdx()).getMessages().addFirst(displayMessage);
+        chats.get(userList.getSelectedIdx()).addMessage(displayMessage);
 
         Optional<SocketAddress> address = userAddress.entrySet().stream().filter(it -> it.getKey().equals(chats.get(userList.getSelectedIdx()).getSender())).findFirst().map(Map.Entry::getValue);
 
