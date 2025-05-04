@@ -187,7 +187,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
                         continue;
 
                     ReceivingBroadcastPacket receivingBroadcastPacket;
-                    byte[] rawData = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
+                    byte[] rawData = Arrays.copyOfRange(packet.getData(), 8, packet.getLength());
 
                     try {
                         String data = new String(rawData, StandardCharsets.UTF_8);
@@ -328,7 +328,7 @@ public class UDPBroadcastUtil implements BroadcastUtil {
         try (UDPBroadcastUtil util = new UDPBroadcastUtil()) {
             util.attachShutdownHook();
             util.open();
-            util.addBroadcastListener(p -> System.out.printf("%s: %s: %s\r\n", Thread.currentThread().getName(), p.getRemoteAddress(), new String(p.getData())));
+            util.addBroadcastListener(p -> System.out.printf("%s: %s: (%s) %s\r\n", Thread.currentThread().getName(), p.getRemoteAddress(), p.getClass().getSimpleName(), new String(p.getData())));
 
             try {
                 Thread.sleep(60000);
