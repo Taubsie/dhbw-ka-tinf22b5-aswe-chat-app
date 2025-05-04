@@ -20,7 +20,6 @@ public class WelcomeData {
     }
 
     public String toJson() {
-        //TODO use provider instead
         return GsonUtil.getGson().toJson(this);
     }
 }
