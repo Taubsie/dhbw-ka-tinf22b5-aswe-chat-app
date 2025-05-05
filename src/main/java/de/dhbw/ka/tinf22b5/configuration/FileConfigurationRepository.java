@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
 
 public class FileConfigurationRepository extends FileStorage implements ConfigurationRepository {
     private final Properties properties;
@@ -32,6 +33,7 @@ public class FileConfigurationRepository extends FileStorage implements Configur
     }
 
     private void loadConfiguration() {
+        boolean init = false;
         Path directoryPath = getDirectoryPath();
 
         try {
@@ -46,6 +48,7 @@ public class FileConfigurationRepository extends FileStorage implements Configur
 
         try {
             Files.createFile(filePath);
+            init = true;
         } catch (FileAlreadyExistsException ignored) {
             //ignored
         } catch (IOException ioException) {
@@ -54,6 +57,14 @@ public class FileConfigurationRepository extends FileStorage implements Configur
 
         try {
             properties.load(Files.newBufferedReader(filePath));
+
+            if (init) {
+                if (getConfigurationValue(ConfigurationKey.USERNAME).isEmpty()) {
+                    setConfigurationValue(ConfigurationKey.USERNAME, UUID.randomUUID().toString());
+                }
+
+                saveConfiguration();
+            }
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
         }
