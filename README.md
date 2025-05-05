@@ -6,8 +6,9 @@ docker build -t aswe-chat-app .
 ```
 
 ### Running the docker container:
+This is only supported on Linux out-of-the-box, due to the `network` option not being supported on Windows.
 ```shell
-docker run -it aswe-chat-app
+docker run -it --network="host" aswe-chat-app
 ```
 
 ### Running the container inside IntelliJ (not recommended)
